@@ -183,20 +183,103 @@
 ### Async await
 1. Modificar **repaso\app.js**:
     ```js
+    let data = [
+        {
+            id: 1,
+            name: 'Carlos',
+            age: 23
+        },
+        {
+            id: 2,
+            name: 'Ramón',
+            age: 45
+        },
+        {
+            id: 3,
+            name: 'Javier',
+            age: 18
+        },
+    ]
+
+    // Función que simula que obtiene datos de una API
+    function getData(){
+        return new Promise((resolve, reject) => {
+            setTimeout(function(){
+                if(false){
+                    resolve(data)
+                }else{
+                    reject('Error: sin respuesta')
+                }
+            }, 2000)
+        })
+    }
+
+    // Funciòn asincrona
+    async function fetchData(){
+        try {
+            let response = await getData()
+            console.log(response)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    fetchData()
+    console.log('Continua el programa')
     ```
 
-
-Peticiones con fetch
+### Peticiones con fetch
++ https://jsonplaceholder.typicode.com
 1. Modificar **repaso\app.js**:
     ```js
-    ```
+    /* fetch('https://jsonplaceholder.typicode.com/users').then(
+        (response) => {
+            response.json().then(
+                (data) => {
+                    console.log(data)
+                }
+            ).catch()
+        }
+    ).catch() */
 
+    // Otra forma más elegante de escribir la función anterior
+    fetch('https://jsonplaceholder.typicode.com/users').then(
+        response => response.json()
+    ).then(
+        data => console.log(data)
+    ).catch()
+    ```
 
 ## Introducción Vue
 
-Instalación de vue
+### Instalación de vue
++ https://v3.vuejs.org/guide/installation.html
+1. Crear carpeta **vue** para empezar un proyecto.
+2. Crear documento **vue\index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso de Vue Js</title>
+    </head>
+    <body>
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            console.log(Vue)
+        </script>
+    </body>
+    </html>
+    ```
 
-Interpolación
+### Interpolación
+
+
+
+    ```js
+    ```
 
 Eventos y métodos
 
