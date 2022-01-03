@@ -275,37 +275,696 @@
     ```
 
 ### Interpolación
+1. Modificar documento **vue\index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso de Vue Js</title>
+    </head>
+    <body>
+        <div id="app">
+            {{ message }}
+            <hr>
+            {{ counter }}
+            <hr>
+            {{ saludo + nombre + ' / ' + 3*7 }}
+        </div>
 
-
-
-    ```js
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            Vue.createApp({
+                data(){
+                    return {
+                        message: 'HSoluciones++',
+                        counter: 0,
+                        saludo: "Hola, mi nombre es: ",
+                        nombre: 'Petrix'
+                    }
+                },
+                mounted(){
+                    setInterval(() => {
+                        this.counter++
+                    }, 1000)
+                }
+            }).mount('#app')
+        </script>
+    </body>
+    </html>
     ```
 
-Eventos y métodos
+### Eventos y métodos
+1. Modificar documento **vue\index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso de Vue Js</title>
+    </head>
+    <body>
+        <div id="app">
+            <button v-on:click="decrement()">
+                -
+            </button>
+            {{ counter }}
+            <button v-on:click="increment()">
+                +
+            </button>
+        </div>
 
-v-model
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            Vue.createApp({
+                data(){
+                    return {
+                        counter: 0
+                    }
+                },
+                methods: {
+                    decrement(){
+                        this.counter--
+                    },
+                    increment(){
+                        this.counter++
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
 
-v-for
+### v-model
+1. Modificar documento **vue\index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso de Vue Js</title>
+    </head>
+    <body>
+        <div id="app">
+            <form action="" v-on:submit.prevent="addPais()">
+                <input type="text" v-model="name">
+                <BUtton>Agregar</BUtton>
+            </form>
+            <hr>
+            País: {{ name }}
+            <hr>
+            {{ paises }}
+        </div>
 
-v-if, v-else, v-if-else y v-show
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            Vue.createApp({
+                data(){
+                    return {
+                        name: "",
+                        paises: ['Perú', 'Bolivia']
+                    }
+                },
+                methods: {
+                    addPais() {
+                        this.paises.push(this.name)
+                        this.name = ""
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
 
-v-bind
+### v-for
+1. Modificar documento **vue\index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso de Vue Js</title>
+    </head>
+    <body>
+        <div id="app">
+            <form action="" v-on:submit.prevent="addPais()">
+                <input type="text" v-model="name" placeholder="País...">
+                <input type="text" v-model="capital" placeholder="Capital...">
+                <BUtton>Agregar</BUtton>
+            </form>
+            <hr>
+            País / Capital: {{ name + (name ? ' / ' : ' ') + capital }}
+            <hr>
+            <ul>
+                <template v-for="(pais, index) in paises" >
+                    <li :key="pais.name">
+                        {{ index + 1 }} - {{ pais.name }} / {{ pais.capital }}
+                    </li>
+                </template>
+            </ul>
+        </div>
 
-Propiedades computadas
-Componentes
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            Vue.createApp({
+                data(){
+                    return {
+                        name: "",
+                        capital: "",
+                        paises: [
+                            {
+                                name: 'Perú',
+                                capital: 'Lima'
+                            },
+                            {
+                                name: 'Venezuela',
+                                capital: 'Caracas'
+                            }
+                        ]
+                    }
+                },
+                methods: {
+                    addPais() {
+                        this.paises.push({
+                            name: this.name,
+                            capital: this.capital
+                        })
+                        this.name = ""
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
 
-Introducción a componentes
+### v-if, v-else, v-if-else y v-show
+1. Modificar documento **vue\index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso de Vue Js</title>
+    </head>
+    <body>
+        <div id="app">
+            <h1 v-if="active">HSoluciones++</h1>
+            <h1 v-else="active">HS++ :(</h1>
 
-Pasar datos a componentes (props)
+            <hr>
 
-Emitir eventos
+            <div v-if="type == 'A'">A</div>
+            <div v-else-if="type == 'B'">B</div>
+            <div v-else-if="type == 'C'">C</div>
+            <div v-else>No es ni A, ni B ni C</div>
 
-Emitir eventos II
+            <hr>
 
-Slots
-Vue CLI
+            <template v-if="active">
+                <h2>HSoluciones++</h2>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. At molestias corporis ex quia recusandae qui ab rem eos! Aliquam eveniet ipsa vitae omnis sit quibusdam fugit dolorum adipisci nesciunt minima.</p>
+                <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aliquam incidunt illo aperiam debitis harum eos alias! Voluptatibus laboriosam obcaecati quia vero ipsum amet illum provident necessitatibus accusamus ipsa! Quos, corporis.</p>
+            </template>
 
-Instalar Vue CLI
+            <hr>
+
+            <h2>Petrix</h2>
+            <p v-if="active">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Reiciendis incidunt molestiae voluptates aliquid impedit! Unde consectetur necessitatibus blanditiis voluptates totam cupiditate itaque iste incidunt reprehenderit cum consequuntur, perferendis debitis tenetur!</p>
+            <p v-show="active">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet repudiandae deserunt tempore rerum corrupti eius dolorum consequuntur qui, provident accusantium sapiente illo, dolor fugiat, et reiciendis ex. Reprehenderit, doloribus voluptas.</p>
+        </div>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            Vue.createApp({
+                data(){
+                    return {
+                        active: true,
+                        type: 'X'
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
+
+### v-bind
+1. Modificar documento **vue\index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso de Vue Js</title>
+
+        <style>
+            .text-black{
+                color: black;
+            }
+            .text-red{
+                color: red;
+            }
+            .text-green{
+                color: green;
+            }
+            .text-blue{
+                color: blue;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <button @click="color = 'red'">
+                Rojo
+            </button>
+            <button @click="color = 'green'">
+                Verde
+            </button>
+            <button @click="color = 'blue'">
+                Azul
+            </button>
+
+            <p v-bind:class=" 'text-' + color ">Lorem ipsum dolor sit amet consectetur adipisicing elit. Error iste nam rem repellat possimus enim consequatur illo quaerat reprehenderit, autem ullam maxime ea? Quo, molestiae eligendi fugiat eveniet esse suscipit.</p>
+            {{ 'text-' + color }}
+
+            <hr>
+
+            <button @click="active = !active">
+                <span v-if="active">Desactivar</span>
+                <span v-else>Activar</span>
+            </button>
+
+            <p :class="active ? 'text-blue' : 'text-red'">Lorem ipsum dolor sit, amet consectetur adipisicing elit. A cum quibusdam velit fuga consectetur perspiciatis numquam, consequuntur repudiandae ullam, obcaecati hic tenetur, adipisci distinctio necessitatibus deserunt. Totam vel repellat nobis.</p>
+        </div>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            Vue.createApp({
+                data(){
+                    return {
+                        color: 'black',
+                        active: true
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
+2. Equivalencias:
+    + **v-on:** se puede reemplazar por **@**
+    + **v-bind:** se puede reemplazar por **:**.
+
+### Propiedades computadas
+1. Modificar documento **vue\index.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso de Vue Js</title>
+
+        <style>
+            .text-black{
+                color: black;
+            }
+            .text-red{
+                color: red;
+            }
+            .text-green{
+                color: green;
+            }
+            .text-blue{
+                color: blue;
+            }
+            .mt-16{
+                margin-top: 4rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <button @click="color = 'red'">
+                Rojo
+            </button>
+            <button @click="color = 'green'">
+                Verde
+            </button>
+            <button @click="color = 'blue'">
+                Azul
+            </button>
+
+            <p v-bind:class=" 'text-' + color ">Lorem ipsum dolor sit amet consectetur adipisicing elit. Error iste nam rem repellat possimus enim consequatur illo quaerat reprehenderit, autem ullam maxime ea? Quo, molestiae eligendi fugiat eveniet esse suscipit.</p>
+            {{ 'text-' + color }}
+
+            <hr>
+
+            <button @click="active = !active">
+                <span v-if="active">Desactivar</span>
+                <span v-else>Activar</span>
+            </button>
+
+            <p :class="colorClassComputed" class="mt-16">Lorem ipsum dolor sit, amet consectetur adipisicing elit. A cum quibusdam velit fuga consectetur perspiciatis numquam, consequuntur repudiandae ullam, obcaecati hic tenetur, adipisci distinctio necessitatibus deserunt. Totam vel repellat nobis.</p>
+        </div>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script>
+            Vue.createApp({
+                data(){
+                    return {
+                        color: 'black',
+                        active: true
+                    }
+                },
+                computed: {
+                    colorClassComputed(){
+                        return this.active ? 'text-blue' : 'text-red'
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
+
+
+## Componentes
+
+### Introducción a componentes
+1. Crear **vue\componentes.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Componentes</title>
+    </head>
+    <body>
+        <div id="app">
+            {{ message }}
+            <hr>
+            <button-counter></button-counter>
+            <button-counter></button-counter>
+            <button-counter></button-counter>
+        </div>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="main.js"></script>
+        <script>
+            app.mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
+2. Crear **vue\main.js**:
+    ```js
+    const app = Vue.createApp({
+        data(){
+            return {
+                message: 'HSoluciones++',
+                count: 5
+            }
+        }
+    })
+
+    app.component('button-counter', {
+        data(){
+            return {
+                count: 0
+            }
+        },
+
+        template: `
+            <button @click="count++">
+                Haz hecho click {{ count }} veces
+            </button>
+        `
+    })
+    ```
+
+### Pasar datos a componentes (props)
+1. Modificar **vue\main.js**:
+    ```js
+    const app = Vue.createApp({
+        data(){
+            return {
+                courses: [
+                    {
+                        id: 1,
+                        name: 'Vue.js',
+                        price: '$50'
+                    },
+                    {
+                        id: 2,
+                        name: 'React.js',
+                        price: '$60'
+                    },
+                    {
+                        id: 3,
+                        name: 'Angular',
+                        price: '$70'
+                    }
+                ]
+            }
+        }
+    })
+
+    app.component('button-counter', {
+        data(){
+            return {
+                count: 0
+            }
+        },
+
+        template: `
+            <button @click="count++">
+                Haz hecho click {{ count }} veces
+            </button>
+        `
+    })
+
+    app.component('detail-course', {
+        data(){
+            return {
+
+            }
+        },
+
+        props: ['course'],
+
+        template: `
+            <h1>{{ course.name }}</h1>
+            <p>Precio: {{ course.price }}</p>
+        `
+    })
+    ```
+2. Modificar **vue\componentes.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Componentes</title>
+    </head>
+    <body>
+        <div id="app">
+            <detail-course v-for="course in courses" :key="course.id" :course="course"></detail-course>
+        </div>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="main.js"></script>
+        <script>
+            app.mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
+
+### Emitir eventos
+1. Modificar **vue\main.js**:
+    ```js
+    const app = Vue.createApp({
+        data(){
+            return {
+                textSize: 1,
+                courses: [
+                    {
+                        id: 1,
+                        name: 'Vue.js',
+                        price: '$50'
+                    },
+                    {
+                        id: 2,
+                        name: 'React.js',
+                        price: '$60'
+                    },
+                    {
+                        id: 3,
+                        name: 'Angular',
+                        price: '$70'
+                    }
+                ]
+            }
+        }
+    })
+
+    app.component('button-counter', {
+        data(){
+            return {
+                count: 0
+            }
+        },
+
+        template: `
+            <button @click="count++">
+                Haz hecho click {{ count }} veces
+            </button>
+        `
+    })
+
+    app.component('detail-course', {
+        data(){
+            return {
+
+            }
+        },
+
+        props: ['course'],
+
+        template: `
+            <h1>{{ course.name }}</h1>
+            <p>Precio: {{ course.price }}</p>
+            <button @click="$emit('crecerTexto', 0.2)">Incrementar tamaño</button>
+        `
+    })
+    ```
+2. Modificar **vue\componentes.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Componentes</title>
+    </head>
+    <body>
+        <div id="app">
+            <div :style="{ fontSize: textSize + 'em' }">
+                <detail-course @crecer-texto="textSize += $event" v-for="course in courses" :key="course.id" :course="course"></detail-course>
+            </div>
+        </div>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="main.js"></script>
+        <script>
+            app.mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
+
+### Emitir eventos II
+1. Modificar **vue\main.js**:
+    ```js
+    const app = Vue.createApp({
+        data(){
+            ≡
+        },
+        methods: {
+            crecer(size){
+                this.textSize += size
+            }
+        }
+    })
+    ≡
+    ```
+2. Modificar **vue\componentes.html**:
+    ```html
+    ≡
+    <detail-course @crecer-texto="crecer" v-for="course in courses" :key="course.id" :course="course"></detail-course>
+    ≡
+    ```
+
+### Slots
+1. Modificar **vue\main.js**:
+    ```js
+    ≡
+    app.component('detail-course', {
+        data(){
+            return {
+
+            }
+        },
+
+        props: ['course'],
+
+        template: `
+            <h1>{{ course.name }}</h1>
+            <p>Precio: {{ course.price }}</p>
+            <slot></slot>
+            <button @click="$emit('crecerTexto', 0.2)">Incrementar tamaño</button>
+        `
+    })
+    ```
+2. Modificar **vue\componentes.html**:
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Componentes</title>
+    </head>
+    <body>
+        <div id="app">
+            <div :style="{ fontSize: textSize + 'em' }">
+                <detail-course @crecer-texto="crecer" :course="course">
+                    <p>Este es el mejor curso que puedes encontrar en la web</p>
+                </detail-course>
+            </div>
+        </div>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="main.js"></script>
+        <script>
+            app.mount('#app')
+        </script>
+    </body>
+    </html>
+    ```
+
+
+## Vue CLI
+
+### Instalar Vue CLI
+    
+    
+    ≡
+    ```js
+    ```
 
 Analizar proyecto
 

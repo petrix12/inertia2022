@@ -5,11 +5,65 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curso de Vue Js</title>
+
+    <style>
+        .text-black{
+            color: black;
+        }
+        .text-red{
+            color: red;
+        }
+        .text-green{
+            color: green;
+        }
+        .text-blue{
+            color: blue;
+        }
+        .mt-16{
+            margin-top: 4rem;
+        }
+    </style>
 </head>
 <body>
+    <div id="app">
+        <button @click="color = 'red'">
+            Rojo
+        </button>
+        <button @click="color = 'green'">
+            Verde
+        </button>
+        <button @click="color = 'blue'">
+            Azul
+        </button>
+
+        <p v-bind:class=" 'text-' + color ">Lorem ipsum dolor sit amet consectetur adipisicing elit. Error iste nam rem repellat possimus enim consequatur illo quaerat reprehenderit, autem ullam maxime ea? Quo, molestiae eligendi fugiat eveniet esse suscipit.</p>
+        {{ 'text-' + color }}
+
+        <hr>
+
+        <button @click="active = !active">
+            <span v-if="active">Desactivar</span>
+            <span v-else>Activar</span>
+        </button>
+
+        <p :class="colorClassComputed" class="mt-16">Lorem ipsum dolor sit, amet consectetur adipisicing elit. A cum quibusdam velit fuga consectetur perspiciatis numquam, consequuntur repudiandae ullam, obcaecati hic tenetur, adipisci distinctio necessitatibus deserunt. Totam vel repellat nobis.</p>
+    </div>
+
     <script src="https://unpkg.com/vue@next"></script>
     <script>
-        console.log(Vue)
+        Vue.createApp({
+            data(){
+                return {
+                    color: 'black',
+                    active: true
+                }
+            },
+            computed: {
+                colorClassComputed(){
+                    return this.active ? 'text-blue' : 'text-red'
+                }
+            }
+        }).mount('#app')
     </script>
 </body>
 </html>
