@@ -960,18 +960,101 @@
 ## Vue CLI
 
 ### Instalar Vue CLI
-    
-    
-    ≡
-    ```js
++ https://v3.vuejs.org/guide/installation.html#cli
+1. Descargar e instalar [node.js](https://nodejs.org/es).
+2. Instalar Vue CLI (ejecutar en una terminal como administrador):
+    + $ npm install -g @vue/cli
+3. Crear proyecto **hspp**:
+    + $ vue create hspp
+    + Seleccionar: Default (Vue 3) ([Vue 3] babel, eslint)
+    + Seleccionar: Use NPM
+4. Ejecutar proyecto **hspp**:
+    + $ cd hspp
+    + $ npm run serve
+ 
+### Analizar proyecto
++ **Contenido**: analisis de la estructura de un proyecto Vue.
+
+### Crear nuestro primer componente
+1. Crear componente **hspp\src\components\Counter.vue**:
+    ```vue
+    <template>
+        <h1>HS++ Counter</h1>
+        <button @click="disminuir()">
+            -
+        </button>
+        {{ contador }}
+        <button @click="aumentar()">
+            +
+        </button>
+    </template>
+
+    <script>
+    export default {
+        data(){
+            return {
+                contador: 0
+            }
+        },
+        methods: {
+            disminuir(){
+                this.contador--
+            },
+            aumentar(){
+                this.contador++
+            }
+        }
+    }
+    </script>
+
+    <style scoped>
+        h1{
+            color: red;
+        }
+    </style>
+    ```
+    + **Atajo**: <vue> with default.vue
+2. Incluir componente **Counter** en el componente principal **hspp\src\App.vue**:
+    ```vue
+    <template>
+        <img alt="Vue logo" src="./assets/logo.png">
+        <h1>Título principal</h1>
+        <Counter />
+    </template>
+
+    <script>
+    import Counter from './components/Counter'
+
+    export default {
+        name: 'App',
+        components: {
+            Counter
+        }
+    }
+    </script>
+
+    <style>
+    #app {
+        font-family: Avenir, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: center;
+        color: #2c3e50;
+        margin-top: 60px;
+    }
+    </style>
     ```
 
-Analizar proyecto
 
-Crear nuestro primer componente
-Vue router
+## Vue router
 
 Instalar Vue Router
+
+
+    ≡
+    ```vue
+    ```
+
 
 Analizar el funcionamiento de Vue Router
 
