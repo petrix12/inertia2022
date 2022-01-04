@@ -1048,7 +1048,602 @@
 
 ## Vue router
 
-Instalar Vue Router
+### Instalar Vue Router
++ https://router.vuejs.org/installation.html#direct-download-cdn
+1. Instalar Vue Router en el proyecto **hspp**:
+    + $ vue add router
+    + ? Still proceed? (y/N): y
+    + ? Use history mode for router? (Requires proper server setup for index fallback in production) (Y/n): y
+
+### Analizar el funcionamiento de Vue Router
+1. Cambios principales al implementer Vue Router:
+    + Archivo de rutas: **hspp\src\router\index.js**.
+    + Los componente que fungen como vistas se ubican en: **hspp\src\views**.
+    + Modifica el componente principal: **hspp\src\App.vue**.
+
+### Crear nueva ruta
+1. Crear vista **hspp\src\views\Blog.vue**:
+    ```vue
+    <template>
+        <h1>HS++ Blog</h1>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style scoped>
+
+    </style>
+    ```
+2. Crear ruta para la vista blog en **hspp\src\router\index.js**:
+    ```js
+    import { createRouter, createWebHistory } from 'vue-router'
+    import Home from '../views/Home.vue'
+    /* import Blog from '../views/Blog' */
+
+    const routes = [
+        ≡
+        {
+            path: '/blog',
+            name: 'Blog',
+            /* component: Blog */
+            component: () => import('../views/Blog')
+        }
+    ]
+    ≡
+    ```
+3. Incluir blog en el menú del componente principal **hspp\src\App.vue**:
+    ```vue
+    <template>
+        <div id="nav">
+            <router-link to="/">Home</router-link> |
+            <router-link to="/about">About</router-link> |
+            <router-link to="/blog">Blog</router-link>
+        </div>
+        <router-view/>
+    </template>
+    ≡
+    ```
+
+### Rutas con parámetros
+1. Agregar ruta para posts en **hspp\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/blog/:post',
+            name: 'Post',
+            component: () => import('../views/Post')
+        }
+    ]
+    ≡
+    ```
+2. Crear vista **hspp\src\views\Post.vue**:
+    ```vue
+    <template>
+        <h1>HS++ Post: {{ $route.params.post }}</h1>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Pasar dos parámetros
+1. Modificar archivo de rutas **hspp\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/user/:user/post/:post',
+            name: 'UserPost',
+            component: () => import('../views/UserPost')
+        }
+    ]
+    ≡
+    ```
+2. Crear vista **hspp\src\views\UserPost.vue**:
+    ```vue
+    <template>
+        <h1>HS++ Post ({{ $route.params.post }}) de un usuario ({{ $route.params.user }})</h1>
+    </template>
+
+    <script>
+    export default {
+        mounted(){
+            console.log(this.$route.params)
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Ruta 404 Not Found
+1. Agregar ruta 404 en **hspp\src\router\index.js**:
+    ```js
+    const routes = [
+        ≡
+        {
+            path: '/:pathMatch(.*)',
+            name: 'NotFound',
+            component: () => import('../views/NotFound')
+        }
+    ]
+    ```
+2. Crear vista **hspp\src\views\NotFound.vue**:
+    ```vue
+    <template>
+        <h1>404 | Ruta no encontrada</h1>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Sintaxis de coincidencia de rutas
+1. Modificar archivo de **rutas hspp\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/compras/:orderIdt(\\d+)',
+            name: 'Order',
+            component: () => import('../views/Order')
+        },
+        {
+            path: '/compras/:productName',
+            name: 'Product',
+            component: () => import('../views/Product')
+        },
+        {
+            path: '/:pathMatch(.*)',
+            name: 'NotFound',
+            component: () => import('../views/NotFound')
+        }
+    ]
+    ≡
+    ```
+2. Crear vista **hspp\src\views\Order.vue**:
+    ```vue
+    <template>
+        <h1>HS++: Detalle de una orden</h1>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+3. Crear vista **hspp\src\views\Product.vue**:
+    ```vue
+    <template>
+        <h1>HS++: Detalle de un producto</h1>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Rutas con parámetros opcionales
+1. Modificar archivo de rutas **hspp\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/users/:userId(\\d+)?',
+            name: 'Users',
+            component: () => import('../views/Users')
+        },
+        {
+            path: '/:pathMatch(.*)',
+            name: 'NotFound',
+            component: () => import('../views/NotFound')
+        }
+    ]
+    ≡
+    ```
+2. Crear componente **hspp\src\views\Users.vue**:
+    ```vue
+    <template>
+        <div v-if="$route.params.userId">
+            <h1>HS++: Detalle de un usuario</h1>
+        </div>
+        <div v-else>
+            <h1>HS++: Lista de usuarios</h1>
+        </div>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Rutas anidadas
+1. Modificar vista **hspp\src\views\Users.vue**:
+    ```vue
+    <template>
+        <div v-if="$route.params.userId">
+            <h1>HS++: Detalle de un usuario</h1>
+        </div>
+        <div v-else>
+            <h1>HS++: Lista de usuarios</h1>
+        </div>
+
+        <div id="nav">
+            <router-link :to="'/users/' + $route.params.userId">Index</router-link> |
+            <router-link :to="'/users/' + $route.params.userId + '/profile'">Perfil</router-link> |
+            <router-link :to="'/users/' + $route.params.userId + '/courses'">Cursos</router-link>
+        </div>
+
+        <router-view/>
+    </template>
+    ≡
+    ```
+2. Modificar archivo de rutas **hspp\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/users/:userId(\\d+)?',
+            name: 'Users',
+            component: () => import('../views/Users'),
+            children: [
+                {
+                    path: '',
+                    component: () => import('../views/users/Index'),
+                },
+                {
+                    path: 'profile',
+                    component: () => import('../views/users/Profile'),
+                },
+                {
+                    path: 'courses',
+                    component: () => import('../views/users/Courses'),
+                }
+            ]
+        },
+        {
+            path: '/:pathMatch(.*)',
+            name: 'NotFound',
+            component: () => import('../views/NotFound')
+        }
+    ]
+    ≡
+    ```
+3. Crear vista **hspp\src\views\users\Profile.vue**:
+    ```vue
+    <template>
+        <h2>HS++: Perfil de un usuario</h2>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+4. Crear vista **hspp\src\views\users\Courses.vue**:
+    ```vue
+    <template>
+        <h2>HS++: Cursos de un usuario</h2>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+5. Crear vista **hspp\src\views\users\Index.vue**:
+    ```vue
+    <template>
+        <h2>HS++: Contenido por defecto</h2>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Rutas con nombre
+1. Modificar componente principal **hspp\src\App.vue** para llamar a las rutas por sus nombres:
+    ```vue
+    <template>
+        <div id="nav">
+            <router-link :to="{name: 'Home'}">Home</router-link> |
+            <router-link :to="{name: 'About'}">About</router-link> |
+            <router-link :to="{name: 'Blog'}">Blog</router-link>
+        </div>
+        <router-view/>
+    </template>
+    ≡
+    ```
+2. Modificar archivo de rutas **hspp\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/users/:userId(\\d+)?',
+            name: 'Users',
+            component: () => import('../views/Users'),
+            children: [
+                {
+                    path: '',
+                    name: 'UsersIndex',
+                    component: () => import('../views/users/Index'),
+                },
+                {
+                    path: 'profile',
+                    name: 'UsersProfile',
+                    component: () => import('../views/users/Profile'),
+                },
+                {
+                    path: 'courses',
+                    name: 'UsersCourses',
+                    component: () => import('../views/users/Courses'),
+                }
+            ]
+        },
+        {
+            path: '/:pathMatch(.*)',
+            name: 'NotFound',
+            component: () => import('../views/NotFound')
+        }
+    ]
+    ≡
+    ```
+3. Modificar la vista **hspp\src\views\Users.vue**:
+    ```vue
+    <template>
+        <div v-if="$route.params.userId">
+            <h1>HS++: Detalle de un usuario</h1>
+        </div>
+        <div v-else>
+            <h1>HS++: Lista de usuarios</h1>
+        </div>
+
+        <div id="nav">
+            <router-link :to="{name: 'UsersIndex', params: {userId: $route.params.userId}}">Index</router-link> |
+            <router-link :to="{name: 'UsersProfile', params: {userId: $route.params.userId}}">Perfil</router-link> |
+            <router-link :to="{name: 'UsersCourses', params: {userId: $route.params.userId}}">Cursos</router-link>
+        </div>
+
+        <router-view/>
+    </template>
+    ≡
+    ```
+
+### Redirecciones
+1. Modificar archivo de rutas **hspp\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/about',
+            name: 'About',
+            // route level code-splitting
+            // this generates a separate chunk (about.[hash].js) for this route
+            // which is lazy-loaded when the route is visited.
+            component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+        },
+        {
+            path: '/blog',
+            /* redirect: '/post', */
+            redirect: { name: 'Blog' },
+        },
+        {
+            path: '/post',
+            name: 'Blog',
+            component: () => import('../views/Blog')
+        },
+        ≡
+    ]
+    ≡
+    ```
+
+### Recibir parametros de la url dentro de props
+1. Modificar vista **hspp\src\views\Users.vue**:
+    ```vue
+    <template>
+        <div v-if="$route.params.userId">
+            <h1>HS++: Detalle del usuario con id = {{ userId }}</h1>
+        </div>
+        <div v-else>
+            <h1>HS++: Lista de usuarios</h1>
+        </div>
+
+        <div id="nav">
+            <router-link :to="{name: 'UsersIndex', params: {userId}}">Index</router-link> |
+            <router-link :to="{name: 'UsersProfile', params: {userId}}">Perfil</router-link> |
+            <router-link :to="{name: 'UsersCourses', params: {userId}}">Cursos</router-link>
+        </div>
+
+        <router-view/>
+    </template>
+
+    <script>
+    export default {
+        props: ['userId'],
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+2. Modificar archivo de rutas **hspp\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/users/:userId(\\d+)?',
+            name: 'Users',
+            component: () => import('../views/Users'),
+            props: true,
+            children: [
+                {
+                    path: '',
+                    name: 'UsersIndex',
+                    component: () => import('../views/users/Index'),
+                },
+                {
+                    path: 'profile',
+                    name: 'UsersProfile',
+                    component: () => import('../views/users/Profile'),
+                },
+                {
+                    path: 'courses',
+                    name: 'UsersCourses',
+                    component: () => import('../views/users/Courses'),
+                }
+            ]
+        },
+        {
+            path: '/:pathMatch(.*)',
+            name: 'NotFound',
+            component: () => import('../views/NotFound')
+        }
+    ]
+    ≡
+    ```
+
+### Diferentes modos history
++ https://router.vuejs.org/guide/essentials/history-mode.html#example-server-configurations
+1. Modificar el archivo de rutas **hspp\src\router\index.js** para cambiar el modo **createWebHistory** por **createWebHashHistory**:
+    ```js
+    import { createRouter, createWebHashHistory } from 'vue-router'
+    import Home from '../views/Home.vue'
+
+    const routes = [
+        ≡
+    ]
+
+    const router = createRouter({
+        history: createWebHashHistory(process.env.BASE_URL),
+        routes
+    })
+
+    export default router
+    ```
+2. Revertir los cambios en **hspp\src\router\index.js**.
+
+### Ciclos de vida
++ https://v3.vuejs.org/api/options-lifecycle-hooks.html#beforecreate
+1. Modificar componente **hspp\src\components\HelloWorld.vue**:
+    ```vue
+    <template>
+        <div class="hello">
+            <!-- <h1>{{ msg }}</h1> -->
+            <h1>{{ prueba }}</h1>
+            <button @click="prueba += '+'">Cambiar valor de prueba</button>
+            ≡
+        </div>
+    </template>
+
+    <script>
+    export default {
+        name: 'HelloWorld',
+        props: {
+            msg: String
+        },
+        data(){
+            return {
+            prueba: "HS++ Saludo original"
+            }
+        },
+        beforeCreate(){
+            // Este método se ejecuta antes de crearse el componente
+            console.log('beforeCreate')
+            this.prueba = "HS++ Saludo desde beforeCreate"
+        },
+        created(){
+            // Este método se ejecuta luego de crearse el componente (pero aún no se ha montado)
+            console.log('created')
+            this.prueba = "HS++ Saludo desde created"
+        },
+        mounted(){
+            // Este método se ejecuta luego de montarse el componente
+            console.log('mounted')
+            alert('Componente montado')
+        },
+        updated(){
+            // Este método se ejecuta cuando ocurre algún cambio en el componente
+            console.log('updated')
+        },
+        unmounted(){
+            // Este método se ejecuta luego de desmontarse el componente
+            console.log('unmounted')
+            alert('Componente desmontado')
+        },
+    }
+    </script>
+    ≡
+    ```
+
+
+## VueX
+
+### ¿Qué es VueX?
++ Contenido: 
 
 
     ≡
@@ -1056,47 +1651,11 @@ Instalar Vue Router
     ```
 
 
-Analizar el funcionamiento de Vue Router
-
-Crear nueva ruta
-
-Rutas con parametros
-
-Pasar dos parametros
-
-Ruta 404 Not Found
-
-Sintaxis de coincidencia de rutas
-
-Rutas con parámetros opcionales
-
-Rutas anidadas
-
-Rutas con nombre
-
-Redirecciones
-
-Recibir parametros de la url dentro de props
-
-Diferentes modos history
-
-Ciclos de vida
-VueX
-
-¿Qué es VueX?
-
-Instalar VueX
-
-States
-
-Getters
-
-Mutations I
-
-Mutations II
-
-Acciones I
-
-Acciones II
-
-Modulos
+### Instalar VueX
+### States
+### Getters
+### Mutations I
+### Mutations II
+### Acciones I
+### Acciones II
+### Modulos
