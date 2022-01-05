@@ -1643,19 +1643,536 @@
 ## VueX
 
 ### ¿Qué es VueX?
-+ Contenido: 
++ **Contenido**: acerca de Vuex.
+
+### Instalar VueX
+1. Instalar VueX al proyecto **hspp**:
+    + $ vue add vuex
+    + ? Still proceed? (y/N): y
+
+### States
+1. Crear componente **hspp\src\components\MiTienda.vue**:
+    ```vue
+    <template>
+        <h1>Tienda HS++</h1>
+        <p>Mi nombre es: {{ nombre }}</p>
+        <p>Mi apellido es: {{ apellido }}</p>
+    </template>
+
+    <script>
+    import { mapState } from 'vuex'
+    export default {
+        /* computed: {
+            nombre(){
+                return this.$store.state.nombre
+            },
+            apellido(){
+                return this.$store.state.apellido
+            }
+        } */
+        /* computed: mapState(['nombre', 'apellido']) */
+        computed: {
+            ...mapState(['nombre', 'apellido'])
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+2. Modificar la vista **hspp\src\views\Home.vue**:
+    ```vue
+    <template>
+        <div class="home">
+            <img alt="Vue logo" src="../assets/logo.png">
+            <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
+            <MiTienda />
+        </div>
+    </template>
+
+    <script>
+    // @ is an alias to /src
+    /* import HelloWorld from '@/components/HelloWorld.vue' */
+    import MiTienda from '@/components/MiTienda.vue'
+
+    export default {
+        name: 'Home',
+        components: {
+            /* HelloWorld */
+            MiTienda
+        }
+    }
+    </script>
+    ```
+
+### Getters
+1. Modificar **hspp\src\components\MiTienda.vue**:
+    ```vue
+    <template>
+        <h1>Tienda HS++</h1>
+        <p>Mi nombre es: {{ nombre }}</p>
+        <p>Mi apellido es: {{ apellido }}</p>
+        <p>El apellido tiene {{ sizeApellido }} letras</p>
+        <!-- <p>El apellido tiene {{ $store.getters.sizeApellido }} letras</p> -->
+    </template>
+
+    <script>
+    import { mapState, mapGetters } from 'vuex'
+    export default {
+        computed: {
+            ...mapState(['nombre', 'apellido']),
+            /* sizeApellido(){
+                return this.$store.getters.sizeApellido
+            } */
+            ...mapGetters(['sizeApellido'])
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+2. Modificar **hspp\src\store\index.js**:
+    ```js
+    import { createStore } from 'vuex'
+
+    export default createStore({
+        state: {
+            nombre: 'Leticia',
+            apellido: 'Rodríguez'
+        },
+        getters: {
+            sizeApellido(state){
+                return state.apellido.length
+            }
+        },
+        mutations: {
+        },
+        actions: {
+        },
+        modules: {
+        }
+    })
+    ```
+
+### Mutations I
+1. Modificar **hspp\src\store\index.js**:
+    ```js
+    import { createStore } from 'vuex'
+
+    export default createStore({
+        state: {
+            nombre: 'Leticia',
+            apellido: 'Rodríguez',
+            count: 1
+        },
+        getters: {
+            sizeApellido(state){
+                return state.apellido.length
+            }
+        },
+        mutations: {
+            decrement(state){
+                state.count--
+            },
+            increment(state){
+                state.count++
+            }
+        },
+        actions: {
+        },
+        modules: {
+        }
+    })
+    ```
+2. Modificar **hspp\src\components\MiTienda.vue**:
+    ```vue
+    <template>
+        <h1>Tienda HS++</h1>
+        <p>Mi nombre es: {{ nombre }}</p>
+        <p>Mi apellido es: {{ apellido }}</p>
+        <p>El apellido tiene {{ sizeApellido }} letras</p>
+        <!-- <p>El apellido tiene {{ $store.getters.sizeApellido }} letras</p> -->
+        <div>
+            <button @click="decrement()">-</button>
+            {{ count }}
+            <button @click="increment()">+</button>
+        </div>
+    </template>
+
+    <script>
+    import { mapState, mapGetters, mapMutations } from 'vuex'
+    export default {
+        methods: {
+            ...mapMutations(['decrement', 'increment'])
+            /* decrement(){
+                this.$store.commit('decrement')
+            },
+            increment(){
+                this.$store.commit('increment')
+            } */
+        },
+        computed: {
+            ...mapState(['nombre', 'apellido', 'count']),
+            /* sizeApellido(){
+                return this.$store.getters.sizeApellido
+            } */
+            ...mapGetters(['sizeApellido'])
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Mutations II
+1. Modificar **hspp\src\store\index.js**:
+    ```js
+    ≡
+    export default createStore({
+        ≡,
+        mutations: {
+            changeNombre(state, nombre){
+                state.nombre = nombre
+            },
+            ≡
+        },
+        ≡
+    })
+    ```
+2. Modificar **hspp\src\components\MiTienda.vue**:
+    ```vue
+    <template>
+        <h1>Tienda HS++</h1>
+        <p>Mi nombre es: {{ nombre }}</p>
+        <p>Mi apellido es: {{ apellido }}</p>
+        <p>El apellido tiene {{ sizeApellido }} letras</p>
+        <form @submit.prevent="changeNombreComponente()">
+            <input type="text" v-model="nombreComponente">
+            <button>Actualizar</button>
+        </form>
+        
+    </template>
+
+    <script>
+    import { mapState, mapGetters, mapMutations } from 'vuex'
+    export default {
+        data(){
+            return {
+                nombreComponente: ''
+            }
+        },
+        methods: {
+            ...mapMutations(['decrement', 'increment', 'changeNombre']),
+            changeNombreComponente(){
+                this.changeNombre(this.nombreComponente)
+                this.nombreComponente = ''
+            }
+        },
+        computed: {
+            ...mapState(['nombre', 'apellido', 'count']),
+            ...mapGetters(['sizeApellido'])
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Acciones I
+1. Modificar **hspp\src\store\index.js**:
+    ```js
+    ≡
+    export default createStore({
+        ≡
+        actions: {
+            changeNombre(/* context */ { commit }, nombre){
+                setTimeout(() => {
+                    console.log('Actualizado en BD')
+                    /* context.commit('changeNombre', nombre) */
+                    commit('changeNombre', nombre)
+                }, 500)
+            }
+        },
+        ≡
+    })
+    ```
+2. Modificar **hspp\src\components\MiTienda.vue**:
+    ```vue
+    <template>
+        <h1>Tienda HS++</h1>
+        <p>Mi nombre es: {{ nombre }}</p>
+        <p>Mi apellido es: {{ apellido }}</p>
+        <p>El apellido tiene {{ sizeApellido }} letras</p>
+        <form @submit.prevent="changeNombreComponente()">
+            <input type="text" v-model="nombreComponente">
+            <button>Actualizar</button>
+        </form>
+        
+    </template>
+
+    <script>
+    import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+    export default {
+        data(){
+            return {
+                nombreComponente: ''
+            }
+        },
+        methods: {
+            ...mapMutations(['decrement', 'increment']),
+            ...mapActions(['changeNombre']),
+            changeNombreComponente(){
+                this.changeNombre(this.nombreComponente)
+                this.nombreComponente = ''
+            },
+            /* changeNombre(nombre){
+                this.$store.dispatch('changeNombre', nombre)
+            } */
+        },
+        computed: {
+            ...mapState(['nombre', 'apellido', 'count']),
+            ...mapGetters(['sizeApellido'])
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Acciones II
+1. Modificar **hspp\src\store\index.js**:
+    ```js
+    ≡
+    export default createStore({
+        ≡
+        actions: {
+            changeNombre({ commit }, nombre){
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        commit('changeNombre', nombre)
+                        resolve()
+                    }, 500)
+                })
+            },
+            async confirmationChangeNombre({ dispatch }, nombre){
+                await dispatch('changeNombre', nombre)
+                console.log('Actualizado en BD')
+            }
+        },
+        modules: {
+        }
+    })
+    ```
+2. Modificar **hspp\src\components\MiTienda.vue**:
+    ```vue
+    ≡
+    <script>
+    import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+    export default {
+        ≡
+        methods: {
+            ...mapMutations(['decrement', 'increment']),
+            ...mapActions(['changeNombre', 'confirmationChangeNombre']),
+            changeNombreComponente(){
+                this.confirmationChangeNombre(this.nombreComponente).then(() => {
+                    this.nombreComponente = ''
+                })
+            }
+        },
+        ≡
+    }
+    </script>
+    ≡
+    ```
+
+### Módulos
+1. Modificar **hspp\src\store\index.js**:
+    ```js
+    import { createStore } from 'vuex'
+    /* import { moduleUser } from './modules/moduleUser'
+    import { moduleCounter } from './modules/moduleCounter' */
+    import moduleUser from './modules/moduleUser'
+    import moduleCounter from './modules/moduleCounter'
+
+    /* const moduleUser = {
+        namespaced: true,
+
+        state: {
+            nombre: 'Leticia',
+            apellido: 'Rodríguez'
+        },
+        getters: {
+            sizeApellido(state){
+                return state.apellido.length
+            }
+        },
+        mutations: {
+            changeNombre(state, nombre){
+                state.nombre = nombre
+            }
+        },
+        actions: {
+            changeNombre({ commit }, nombre){
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        commit('changeNombre', nombre)
+                        resolve()
+                    }, 500)
+                })
+            },
+            async confirmationChangeNombre({ dispatch }, nombre){
+                await dispatch('changeNombre', nombre)
+                console.log('Actualizado en BD')
+            }
+        }
+    } */
+
+    /* const moduleCounter = {
+        namespaced: true,
+        
+        state: {
+            count: 1
+        },
+        mutations: {
+            decrement(state){
+                state.count--
+            },
+            increment(state){
+                state.count++
+            }
+        }
+    } */
+
+    export default createStore({
+        state: {
+        },
+        modules: {
+            user: moduleUser,
+            counter: moduleCounter
+        }
+    })
+    ```
+2. Modificar **hspp\src\components\MiTienda.vue**:
+    ```vue
+    <template>
+        <h1>Tienda HS++</h1>
+        <p>Mi nombre es: {{ nombre }}</p>
+        <p>Mi apellido es: {{ apellido }}</p>
+        <p>El apellido tiene {{ sizeApellido }} letras</p>
+        <form @submit.prevent="changeNombreComponente()">
+            <input type="text" v-model="nombreComponente">
+            <button>Actualizar</button>
+        </form>
+        
+    </template>
+
+    <script>
+    /* import { mapState, mapGetters, mapMutations, mapActions } from 'vuex' */
+    import { createNamespacedHelpers } from 'vuex'
+    const { mapState, mapGetters, mapMutations, mapActions } = createNamespacedHelpers('user')
+
+    export default {
+        data(){
+            return {
+                nombreComponente: ''
+            }
+        },
+        methods: {
+            ...mapMutations(/* 'counter',  */['decrement', 'increment']),
+            ...mapActions(/* 'user',  */['changeNombre', 'confirmationChangeNombre']),
+            changeNombreComponente(){
+                this.confirmationChangeNombre(this.nombreComponente).then(() => {
+                    this.nombreComponente = ''
+                })
+            }
+        },
+        computed: {
+            ...mapState(/* 'user',  */['nombre', 'apellido', 'count']),
+            /* ...mapState({
+                nombre: state => state.user.nombre, 
+                apellido: state => state.user.apellido, 
+                count: state => state.counter.count
+            }), */
+            ...mapGetters(/* 'user',  */['sizeApellido'])
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+3. Crear **hspp\src\store\modules\moduleUser.js**:
+    ```js
+    /* export  */const moduleUser = {
+        namespaced: true,
+
+        state: {
+            nombre: 'Leticia',
+            apellido: 'Rodríguez'
+        },
+        getters: {
+            sizeApellido(state){
+                return state.apellido.length
+            }
+        },
+        mutations: {
+            changeNombre(state, nombre){
+                state.nombre = nombre
+            }
+        },
+        actions: {
+            changeNombre({ commit }, nombre){
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        commit('changeNombre', nombre)
+                        resolve()
+                    }, 500)
+                })
+            },
+            async confirmationChangeNombre({ dispatch }, nombre){
+                await dispatch('changeNombre', nombre)
+                console.log('Actualizado en BD')
+            }
+        }
+    }
+
+    export default moduleUser
+    ```
+4. Crear **hspp\src\store\modules\moduleUser.js**:
+    ```js
+    /* export  */const moduleCounter = {
+        namespaced: true,
+        
+        state: {
+            count: 1
+        },
+        mutations: {
+            decrement(state){
+                state.count--
+            },
+            increment(state){
+                state.count++
+            }
+        }
+    }
+
+    export default moduleCounter
+    ```
+
+
 
 
     ≡
     ```vue
     ```
 
-
-### Instalar VueX
-### States
-### Getters
-### Mutations I
-### Mutations II
-### Acciones I
-### Acciones II
-### Modulos
