@@ -17,7 +17,6 @@
 
 
 ## Repaso javascript
-
 ### Introducción
 + **Contenido**: sobre la necesidad de dominar JavaScript.
 
@@ -251,7 +250,6 @@
     ```
 
 ## Introducción Vue
-
 ### Instalación de vue
 + https://v3.vuejs.org/guide/installation.html
 1. Crear carpeta **vue** para empezar un proyecto.
@@ -666,7 +664,6 @@
 
 
 ## Componentes
-
 ### Introducción a componentes
 1. Crear **vue\componentes.html**:
     ```html
@@ -958,7 +955,6 @@
 
 
 ## Vue CLI
-
 ### Instalar Vue CLI
 + https://v3.vuejs.org/guide/installation.html#cli
 1. Descargar e instalar [node.js](https://nodejs.org/es).
@@ -1047,7 +1043,6 @@
 
 
 ## Vue router
-
 ### Instalar Vue Router
 + https://router.vuejs.org/installation.html#direct-download-cdn
 1. Instalar Vue Router en el proyecto **hspp**:
@@ -1639,9 +1634,7 @@
     ≡
     ```
 
-
 ## VueX
-
 ### ¿Qué es VueX?
 + **Contenido**: acerca de Vuex.
 
@@ -2170,9 +2163,1265 @@
     ```
 
 
+## CRUD
+### Resumen de la sección
++ **Contenido**: sobre lo que haremos en esta sección.
++ **Repositorio de la API a consumir en esta sección**: https://github.com/coders-free/cursos-prueba
+  
+### Nuevo proyecto
+1. Crear proyecto **cursos**:
+    + $ vue create cursos
+        + Seleccionar: Manually select features
+        + Seleccionar unicamente:
+            + (*) Choose Vue version
+            + (*) Babel
+            + (*) Router
+            + (*) Vuex
+            + (*) Linter / Formatter
+        + Seleccionar: 3.x
+        + Use history mode for router? (Requires proper server setup for index fallback in production) (Y/n): y
+        + Seleccionar: ESLint with error prevention only
+        + Seleccionar unicamente: 
+            + (*) Lint on save
+        + Selecconar: In dedicated config files
+        + Save this as a preset for future projects? (y/N): n
+    + Ejecutar proyecto:
+        + $ cd cursos
+        + npm run serve
+2. Instalar Axios:
+    + $ cd cursos
+    + $ npm install --save axios vue-axios
+        + URL de nmp vue-axios: https://www.npmjs.com/package/vue-axios
+3. Indicar las dependencias de axios en **cursos\src\main.js**:
+    ```js
+    ≡
+    import axios from 'axios'
+    import VueAxios from 'vue-axios'
+
+    createApp(App).use(VueAxios, axios).use(store).use(router).mount('#app')
+    ```
+
+### Mostrar listado de registros
+1. Modificar componente principal **cursos\src\App.vue**:
+    ```vue
+    <template>
+            <div id="nav">
+                <router-link to="/">Home</router-link> |
+                <router-link :to="{name: 'CoursesList'}">Cursos</router-link> |
+                <router-link to="/about">About</router-link>
+            </div>
+        <router-view />
+    </template>
+    ≡
+    ```
+2. Modificar archivo de rutas **cursos\src\router\index.js**:
+    ```js
+    ≡
+    {
+        path: '/',
+        name: 'Home',
+        component: Home
+    },
+    {
+        path: '/courses',
+        name: 'CoursesList',
+        component: () => import('../views/courses/CoursesList')
+    },
+    {
+        path: '/courses/:id',
+        name: 'CourseDetails',
+        component: () => import('../views/courses/CourseDetails')
+    },
+    ≡
+    ```
+3. Crear vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <h1>Lista de cursos</h1>
+        <ul>
+            <li v-for="course in courses" :key="course.id">
+                <router-link :to="{ name: 'CourseDetails', params: { id: course.id } }">
+                    {{ course.title }}
+                </router-link>
+            </li>
+        </ul>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                courses: []
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get('https://cursos-prueba.tk/api/courses')
+                    .then(response => {
+                        this.courses = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourses()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+4. Crear vista **cursos\src\views\courses\CourseDetails.vue**:
+    ```vue
+    <template>
+        <h1>Detalle de un curso</h1>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Mostrar detalle de un registro
+1. Modificar vista **cursos\src\views\courses\CourseDetails.vue**:
+    ```vue
+    <template>
+        <h1>{{ course.title }}</h1>
+        <p>{{ course.description }}</p>
+        <p><b>Categoría: </b>{{ course.category.name }}</p>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                course: {}
+            }
+        },
+        methods: {
+            getCourse() {
+                this.axios.get(`https://cursos-prueba.tk/api/courses/${this.$route.params.id}?included=category`)
+                    .then(response => {
+                        this.course = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourse()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Guardar registro I
+1. Modificar la vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <h1>Lista de cursos</h1>
+        <form>
+            <div>
+                <label for="title">Título</label>
+                <br>
+                <input id="title" type="text" placeholder="Ingrese el título del curso">
+            </div>
+            <br>
+            <div>
+                <label for="description">Descripción</label>
+                <br>
+                <textarea id="description" placeholder="Ingrese la descripción del curso"></textarea>
+            </div>
+            <br>
+            <div>
+                <label for="categories">Categoría</label>
+                <br>
+                <select name="" id="categories">
+                    <option v-for="category in categories" :key="`category-${category.id}`" :value="category.id">
+                        {{ category.name }}
+                    </option>
+                </select>
+            </div>
+        </form>
+        ≡
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                courses: [],
+                categories: []
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get('https://cursos-prueba.tk/api/courses')
+                    .then(response => {
+                        this.courses = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('https://cursos-prueba.tk/api/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourses(),
+            this.getCategories()
+        }
+    }
+    </script>
+    ≡
+    ```
+
+### Guardar registro II
+1. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <h1>Lista de cursos</h1>
+        <form @submit.prevent="saveCourse">
+            <div>
+                <label for="title">Título</label>
+                <br>
+                <input v-model="course.title" id="title" type="text" placeholder="Ingrese el título del curso">
+            </div>
+            <br>
+            <div>
+                <label for="description">Descripción</label>
+                <br>
+                <textarea v-model="course.description" id="description" type="text" placeholder="Ingrese la descripción del curso"></textarea>
+            </div>
+            <br>
+            <div>
+                <label for="categories">Categoría</label>
+                <br>
+                <select name="" id="categories" v-model="course.category_id">
+                    <option value="" selected disabled>Seleccione una categoría</option>
+                    <option v-for="category in categories" :key="`category-${category.id}`" :value="category.id">
+                        {{ category.name }}
+                    </option>
+                </select>
+            </div>
+            <br>
+            <button type="submit">Guardar</button>
+        </form>
+        <ul>
+            <li v-for="course in courses" :key="`course-${course.id}`">
+                <router-link :to="{ name: 'CourseDetails', params: { id: course.id } }">
+                    {{ course.title }}
+                </router-link>
+            </li>
+        </ul>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                courses: [],
+                categories: [],
+                course: {
+                    title: '',
+                    description: '',
+                    category_id: ''
+                }
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get('https://cursos-prueba.tk/api/courses')
+                    .then(response => {
+                        this.courses = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('https://cursos-prueba.tk/api/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            saveCourse() {
+                this.axios.post('https://cursos-prueba.tk/api/courses', this.course)
+                    .then(response => {
+                        this.courses.push(response.data)
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourses(),
+            this.getCategories()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Eliminar registro
+1. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        ≡
+        <ul>
+            <li v-for="course in courses" :key="`course-${course.id}`">
+                <router-link :to="{ name: 'CourseDetails', params: { id: course.id } }">
+                    {{ course.title }}
+                </router-link>
+                -
+                <button @click="deleteCourse(course.id)">Eliminar</button>
+            </li>
+        </ul>
+    </template>
+
+    <script>
+    export default {
+        ≡
+        methods: {
+            ≡
+            deleteCourse(id) {
+                this.axios.delete(`https://cursos-prueba.tk/api/courses/${id}`)
+                    .then(() => {
+                        this.courses = this.courses.filter(course => course.id != id)
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        ≡
+    }
+    </script>
+    ≡
+    ```
+
+### Editar registro
+1. Modificar archivo de rutas **cursos\src\router\index.js**:
+    ```js
+    ≡
+    {
+        path: '/courses/:id',
+        name: 'CourseDetails',
+        component: () => import('../views/courses/CourseDetails')
+    },
+    {
+        path: '/courses/:id/edit',
+        name: 'CourseEdit',
+        component: () => import('../views/courses/CourseEdit')
+    },
+    ≡
+    ```
+2. Crear vista **cursos\src\views\courses\CourseEdit.vue**:
+    ```vue
+    <template>
+        <h1>Editar curso</h1>
+        <form @submit.prevent="updateCourse">
+            <div>
+                <label for="title">Título</label>
+                <br>
+                <input v-model="course.title" id="title" type="text" placeholder="Ingrese el título del curso">
+            </div>
+            <br>
+            <div>
+                <label for="description">Descripción</label>
+                <br>
+                <textarea v-model="course.description" id="description" type="text" placeholder="Ingrese la descripción del curso"></textarea>
+            </div>
+            <br>
+            <div>
+                <label for="categories">Categoría</label>
+                <br>
+                <select name="" id="categories" v-model="course.category_id">
+                    <option value="" selected disabled>Seleccione una categoría</option>
+                    <option v-for="category in categories" :key="`category-${category.id}`" :value="category.id">
+                        {{ category.name }}
+                    </option>
+                </select>
+            </div>
+            <br>
+            <button type="submit">Guardar</button>
+        </form>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                course: {},
+                categories: [],
+            }
+        },
+        methods: {
+            getCourse() {
+                this.axios.get(`https://cursos-prueba.tk/api/courses/${this.$route.params.id}?included=category`)
+                    .then(response => {
+                        this.course = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            updateCourse() {
+                this.axios.put(`https://cursos-prueba.tk/api/courses/${this.$route.params.id}`, this.course)
+                    .then(() => {
+                        this.$router.push({ name: 'CourseDetails', params: { id: this.$route.params.id } })
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('https://cursos-prueba.tk/api/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourse(),
+            this.getCategories()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+3. Modificar vista **cursos\src\views\courses\CourseDetails.vue**:
+    ```vue
+    <template>
+        <h1>{{ course.title }}</h1>
+        <p>{{ course.description }}</p>
+        <p><b>Categoría: </b>{{ course.category.name }}</p>
+        <router-link :to="{name: 'CourseEdit', params: {id: course.id}}">
+            Editar curso
+        </router-link>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                course: {}
+            }
+        },
+        methods: {
+            getCourse() {
+                this.axios.get(`https://cursos-prueba.tk/api/courses/${this.$route.params.id}?included=category`)
+                    .then(response => {
+                        this.course = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourse()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+4. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <h1>Lista de cursos</h1>
+        <form @submit.prevent="saveCourse">
+            <div>
+                <label for="title">Título</label>
+                <br>
+                <input v-model="course.title" id="title" type="text" placeholder="Ingrese el título del curso">
+            </div>
+            <br>
+            <div>
+                <label for="description">Descripción</label>
+                <br>
+                <textarea v-model="course.description" id="description" type="text" placeholder="Ingrese la descripción del curso"></textarea>
+            </div>
+            <br>
+            <div>
+                <label for="categories">Categoría</label>
+                <br>
+                <select name="" id="categories" v-model="course.category_id">
+                    <option value="" selected disabled>Seleccione una categoría</option>
+                    <option v-for="category in categories" :key="`category-${category.id}`" :value="category.id">
+                        {{ category.name }}
+                    </option>
+                </select>
+            </div>
+            <br>
+            <button type="submit">Guardar</button>
+        </form>
+        <ul>
+            <li v-for="course in courses" :key="`course-${course.id}`">
+                <router-link :to="{ name: 'CourseDetails', params: { id: course.id } }">
+                    {{ course.title }}
+                </router-link>
+                -
+                <button @click="deleteCourse(course.id)">Eliminar</button>
+            </li>
+        </ul>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                courses: [],
+                categories: [],
+                course: {
+                    title: '',
+                    description: '',
+                    category_id: ''
+                }
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get('https://cursos-prueba.tk/api/courses')
+                    .then(response => {
+                        this.courses = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('https://cursos-prueba.tk/api/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            saveCourse() {
+                this.axios.post('https://cursos-prueba.tk/api/courses', this.course)
+                    .then(response => {
+                        this.courses.push(response.data)
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            deleteCourse(id) {
+                this.axios.delete(`https://cursos-prueba.tk/api/courses/${id}`)
+                    .then(() => {
+                        this.courses = this.courses.filter(course => course.id != id)
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourses(),
+            this.getCategories()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Mostrar errores de validación
+1. Modificar Vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <h1>Lista de cursos</h1>
+        <ul v-if="errors.length > 0">
+            <li v-for="error in errors" :key="error.id">
+                {{ error }}
+            </li>
+        </ul>
+        ≡
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                courses: [],
+                categories: [],
+                course: {
+                    title: '',
+                    description: '',
+                    category_id: ''
+                },
+                errors: []
+            }
+        },
+        methods: {
+            ≡
+            saveCourse() {
+                this.axios.post('https://cursos-prueba.tk/api/courses', this.course)
+                    .then(response => {
+                        this.courses.push(response.data)
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                        this.errors = []
+                    })
+                    .catch(error => {
+                        this.errors = Object.values(error.response.data.errors).flat()
+                    })
+            },
+            ≡
+        },
+        ≡
+    }
+    </script>
+    ≡
+    ```
+
+### Paginación
+1. Obtener los CDN's de [Bootstrap](https://getbootstrap.com/docs/5.1/getting-started/download) y pegarlos en **cursos\public\index.html**:
+    ```html
+    ≡
+    <head>
+        ≡
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    </head>
+    ≡
+    ```
+2. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Lista de cursos</h1>
+            <ul v-if="errors.length > 0">
+                <li v-for="error in errors" :key="error.id">
+                    {{ error }}
+                </li>
+            </ul>
+            <form @submit.prevent="saveCourse" class="mb-4">
+                <div class="mb-2">
+                    <label for="title">Título</label>
+                    <br>
+                    <input v-model="course.title" id="title" type="text" placeholder="Ingrese el título del curso">
+                </div>
+                
+                <div class="mb-2">
+                    <label for="description">Descripción</label>
+                    <br>
+                    <textarea v-model="course.description" id="description" type="text" placeholder="Ingrese la descripción del curso"></textarea>
+                </div>
+                
+                <div class="mb-2">
+                    <label for="categories">Categoría</label>
+                    <br>
+                    <select name="" id="categories" v-model="course.category_id">
+                        <option value="" selected disabled>Seleccione una categoría</option>
+                        <option v-for="category in categories" :key="`category-${category.id}`" :value="category.id">
+                            {{ category.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+            </form>
+            <ul>
+                <li v-for="course in courses" :key="`course-${course.id}`" class="mb-2">
+                    <router-link :to="{ name: 'CourseDetails', params: { id: course.id } }">
+                        {{ course.title }}
+                    </router-link>
+                    -
+                    <button @click="deleteCourse(course.id)" class="btn btn-danger btn-sm">Eliminar</button>
+                </li>
+            </ul>
+
+            <!-- paginación -->
+            <div class="d-flex justify-content-center">
+                <nav aria-label="...">
+                    <ul class="pagination">
+                        <li 
+                            v-for="pagination_link in pagination_links"
+                            :key="'pagination_link-' + pagination_link.label"
+                            class="page-item"
+                            :class="{
+                                'disabled': pagination_link.url == null,
+                                'active': pagination_link.active
+                            }"
+                        >
+                            <a 
+                                class="page-link"
+                                @click="changePage(pagination_link.url)"
+                                v-html="pagination_link.label" 
+                                style="cursor: pointer"
+                            ></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                courses: [],
+                categories: [],
+                course: {
+                    title: '',
+                    description: '',
+                    category_id: ''
+                },
+                errors: [],
+                pagination_links: []
+            }
+        },
+        computed: {
+            page() {
+                return this.$route.query.page ?? 1
+            }
+        },
+        watch: {
+            page() {
+            this.getCourses() 
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get(`https://cursos-prueba.tk/api/courses?per_page=10&page=${this.page}`)
+                    .then(response => {
+                        let res = response.data
+                        this.courses = res.data
+                        this.pagination_links = res.links
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('https://cursos-prueba.tk/api/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            saveCourse() {
+                this.axios.post('https://cursos-prueba.tk/api/courses', this.course)
+                    .then(response => {
+                        this.courses.push(response.data)
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                        this.errors = []
+                    })
+                    .catch(error => {
+                        this.errors = Object.values(error.response.data.errors).flat()
+                    })
+            },
+            deleteCourse(id) {
+                this.axios.delete(`https://cursos-prueba.tk/api/courses/${id}`)
+                    .then(() => {
+                        this.courses = this.courses.filter(course => course.id != id)
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            changePage(url) {
+                this.$router.replace({
+                    query: {
+                        page: url.split('page=')[1]
+                    }
+                })
+            }
+        },
+        created() {
+            this.getCourses(),
+            this.getCategories()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Paginación II
+1. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Lista de cursos</h1>
+            <ul v-if="errors.length > 0">
+                <li v-for="error in errors" :key="error.id">
+                    {{ error }}
+                </li>
+            </ul>
+            <form @submit.prevent="saveCourse" class="mb-4">
+                <div class="mb-2">
+                    <label for="title">Título</label>
+                    <br>
+                    <input v-model="course.title" id="title" type="text" placeholder="Ingrese el título del curso">
+                </div>
+                
+                <div class="mb-2">
+                    <label for="description">Descripción</label>
+                    <br>
+                    <textarea v-model="course.description" id="description" type="text" placeholder="Ingrese la descripción del curso"></textarea>
+                </div>
+                
+                <div class="mb-2">
+                    <label for="categories">Categoría</label>
+                    <br>
+                    <select name="" id="categories" v-model="course.category_id">
+                        <option value="" selected disabled>Seleccione una categoría</option>
+                        <option v-for="category in categories" :key="`category-${category.id}`" :value="category.id">
+                            {{ category.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+            </form>
+            <ul>
+                <li v-for="course in courses" :key="`course-${course.id}`" class="mb-2">
+                    <router-link :to="{ name: 'CourseDetails', params: { id: course.id } }">
+                        {{ course.title }}
+                    </router-link>
+                    -
+                    <button @click="deleteCourse(course.id)" class="btn btn-danger btn-sm">Eliminar</button>
+                </li>
+            </ul>
+
+            <!-- paginación -->
+            <div class="d-flex justify-content-center">
+                <nav aria-label="...">
+                    <ul class="pagination">
+                        <li 
+                            v-for="pagination_link in pagination.links"
+                            :key="'pagination_link-' + pagination_link.label"
+                            class="page-item"
+                            :class="{
+                                'disabled': pagination_link.url == null,
+                                'active': pagination_link.active
+                            }"
+                        >
+                            <a 
+                                class="page-link"
+                                @click="changePage(pagination_link.url)"
+                                v-html="pagination_link.label" 
+                                style="cursor: pointer"
+                            ></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                courses: [],
+                categories: [],
+                course: {
+                    title: '',
+                    description: '',
+                    category_id: ''
+                },
+                errors: [],
+                pagination: {}
+                /* pagination_links: [] */
+            }
+        },
+        computed: {
+            page() {
+                let page = this.$route.query.page ?? 1
+                let last_page = this.pagination.last_page
+                if(page > last_page){
+                    this.$router.replace({
+                        query: {
+                            page: this.pagination.last_page
+                        }
+                    })
+                    return last_page
+                }
+                return page
+            }
+        },
+        watch: {
+            page() {
+            this.getCourses() 
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get(`https://cursos-prueba.tk/api/courses?sort=-id&per_page=10&page=${this.page}`)
+                    .then(response => {
+                        let res = response.data
+                        this.courses = res.data
+                        this.pagination = {
+                            links: res.links,
+                            last_page: res.last_page
+                        }
+                        /* this.pagination_links = res.links */
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('https://cursos-prueba.tk/api/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            saveCourse() {
+                this.axios.post('https://cursos-prueba.tk/api/courses', this.course)
+                    .then(() => {
+                        /* this.courses.push(response.data) */
+                        this.getCourses()
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                        this.errors = []
+                    })
+                    .catch(error => {
+                        this.errors = Object.values(error.response.data.errors).flat()
+                    })
+            },
+            deleteCourse(id) {
+                this.axios.delete(`https://cursos-prueba.tk/api/courses/${id}`)
+                    .then(() => {
+                        /* this.courses = this.courses.filter(course => course.id != id) */
+                        this.getCourses()
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            changePage(url) {
+                this.$router.replace({
+                    query: {
+                        page: url.split('page=')[1]
+                    }
+                })
+            }
+        },
+        created() {
+            this.getCourses(),
+            this.getCategories()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Filtrar registros
+1. Modificar **cursos\public\index.html**:
+    ```html
+    ≡
+    <body class="bg-light">
+        ≡
+    </body>
+    ≡
+    ```
+2. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Lista de cursos</h1>
+            <ul v-if="errors.length > 0">
+                <li v-for="error in errors" :key="error.id">
+                    {{ error }}
+                </li>
+            </ul>
+            <div class="mb-4 card">
+                <form @submit.prevent="saveCourse" class="card-body">
+                    <div class="mb-2">
+                        <label for="title">Título</label>
+                        <br>
+                        <input class="form-control" v-model="course.title" id="title" type="text" placeholder="Ingrese el título del curso">
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label for="description">Descripción</label>
+                        <br>
+                        <textarea class="form-control" v-model="course.description" id="description" type="text" placeholder="Ingrese la descripción del curso"></textarea>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label for="categories">Categoría</label>
+                        <br>
+                        <select class="form-control" name="" id="categories" v-model="course.category_id">
+                            <option value="" selected disabled>Seleccione una categoría</option>
+                            <option v-for="category in categories" :key="`category-${category.id}`" :value="category.id">
+                                {{ category.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                </form>
+            </div>
+            <div class="mb-4">
+                <h2>Buscar</h2>
+                <input v-model="search" type="text" placerholder="Ingrese una palabra para filtrar" class="form-control">
+            </div>
+            <ul>
+                <li v-for="course in courses" :key="`course-${course.id}`" class="mb-2">
+                    <router-link :to="{ name: 'CourseDetails', params: { id: course.id } }">
+                        {{ course.title }}
+                    </router-link>
+                    -
+                    <button @click="deleteCourse(course.id)" class="btn btn-danger btn-sm">Eliminar</button>
+                </li>
+            </ul>
+
+            <!-- paginación -->
+            <div class="d-flex justify-content-center">
+                <nav aria-label="...">
+                    <ul class="pagination">
+                        <li 
+                            v-for="pagination_link in pagination.links"
+                            :key="'pagination_link-' + pagination_link.label"
+                            class="page-item"
+                            :class="{
+                                'disabled': pagination_link.url == null,
+                                'active': pagination_link.active
+                            }"
+                        >
+                            <a 
+                                class="page-link"
+                                @click="changePage(pagination_link.url)"
+                                v-html="pagination_link.label" 
+                                style="cursor: pointer"
+                            ></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                courses: [],
+                categories: [],
+                course: {
+                    title: '',
+                    description: '',
+                    category_id: ''
+                },
+                errors: [],
+                pagination: {},
+                search: ''
+            }
+        },
+        computed: {
+            page() {
+                let page = this.$route.query.page ?? 1
+                let last_page = this.pagination.last_page
+                if(page > last_page){
+                    this.$router.replace({
+                        query: {
+                            page: this.pagination.last_page
+                        }
+                    })
+                    return last_page
+                }
+                return page
+            }
+        },
+        watch: {
+            page() {
+            this.getCourses() 
+            },
+            search() {
+                this.getCourses()
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get(`https://cursos-prueba.tk/api/courses?sort=-id&per_page=10&page=${this.page}&filter[title]=${this.search}`)
+                    .then(response => {
+                        let res = response.data
+                        this.courses = res.data
+                        this.pagination = {
+                            links: res.links,
+                            last_page: res.last_page
+                        }
+                        /* this.pagination_links = res.links */
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('https://cursos-prueba.tk/api/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            saveCourse() {
+                this.axios.post('https://cursos-prueba.tk/api/courses', this.course)
+                    .then(() => {
+                        /* this.courses.push(response.data) */
+                        this.getCourses()
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                        this.errors = []
+                    })
+                    .catch(error => {
+                        this.errors = Object.values(error.response.data.errors).flat()
+                    })
+            },
+            deleteCourse(id) {
+                this.axios.delete(`https://cursos-prueba.tk/api/courses/${id}`)
+                    .then(() => {
+                        /* this.courses = this.courses.filter(course => course.id != id) */
+                        this.getCourses()
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            changePage(url) {
+                this.$router.replace({
+                    query: {
+                        page: url.split('page=')[1]
+                    }
+                })
+            }
+        },
+        created() {
+            this.getCourses(),
+            this.getCategories()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>   
+    ```
+
+### Parámetros en las peticiones
+1. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    ≡
+    methods: {
+        getCourses() {
+            /* this.axios.get(`https://cursos-prueba.tk/api/courses?sort=-id&per_page=10&page=${this.page}&filter[title]=${this.search}`) */
+            this.axios.get(`https://cursos-prueba.tk/api/courses`, {
+                params: {
+                    sort: '-id',
+                    per_page: 10,
+                    page: this.page,
+                    'filter[title]': this.search
+                }
+            })
+                .then(response => {
+                    let res = response.data
+                    this.courses = res.data
+                    this.pagination = {
+                        links: res.links,
+                        last_page: res.last_page
+                    }
+                    /* this.pagination_links = res.links */
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+        },
+        ≡
+    }
+    ≡
+    ```
+
+
+## Composition API
+
+
 
 
     ≡
     ```vue
     ```
+
+
 
