@@ -3415,9 +3415,221 @@
 
 
 ## Composition API
+### Setup
+1. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    ≡
+    <script>
+    import { ref, computed } from 'vue'
+    import { useRoute, useRouter } from 'vue-router'
 
+    export default {
+        setup() {
+            // Constantes
+            const pagination = ref({})
+            const route = useRoute()
+            const router = useRouter()
 
+            // Propiedades computadas
+            const page = computed(() => {
+                let page = route.query.page ?? 1
+                if(page > pagination.value.last_page){
+                    router.replace({
+                        query: {
+                            page: pagination.value.last_page
+                        }
+                    })
+                    return pagination.value.last_page
+                }
+                return page
+            })
 
+            // Métodos
+            const setPagination = (response) => {
+                pagination.value = {
+                    links: response.links,
+                    last_page: response.last_page
+                }
+            }
+        
+            const changePage = (url) => {
+                router.replace({
+                    query: {
+                        page: url.split('page=')[1]
+                    }
+                })
+            }
+
+            return {
+                pagination,
+                page,
+                setPagination,
+                changePage
+            }
+        },
+        data() {
+            return {
+                courses: [],
+                categories: [],
+                course: {
+                    title: '',
+                    description: '',
+                    category_id: ''
+                },
+                errors: [],
+                search: ''
+            }
+        },
+        watch: {
+            page() {
+                this.getCourses() 
+            },
+            search() {
+                this.getCourses()
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get(`https://cursos-prueba.tk/api/courses`, {
+                    params: {
+                        sort: '-id',
+                        per_page: 10,
+                        page: this.page,
+                        'filter[title]': this.search
+                    }
+                })
+                    .then(response => {
+                        let res = response.data
+                        this.courses = res.data
+
+                        this.setPagination(res)
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('https://cursos-prueba.tk/api/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            saveCourse() {
+                this.axios.post('https://cursos-prueba.tk/api/courses', this.course)
+                    .then(() => {
+                        /* this.courses.push(response.data) */
+                        this.getCourses()
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                        this.errors = []
+                    })
+                    .catch(error => {
+                        this.errors = Object.values(error.response.data.errors).flat()
+                    })
+            },
+            deleteCourse(id) {
+                this.axios.delete(`https://cursos-prueba.tk/api/courses/${id}`)
+                    .then(() => {
+                        /* this.courses = this.courses.filter(course => course.id != id) */
+                        this.getCourses()
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+        },
+        ≡
+    }
+    </script>
+    ≡
+    ```
+
+### Composables
+1. Crear composable **cursos\src\composables\usePagination.js**:
+    ```js
+    import { ref, computed } from 'vue'
+    import { useRoute, useRouter } from 'vue-router'
+
+    export default function usePagination() {
+        // Constantes
+        const pagination = ref({})
+        const route = useRoute()
+        const router = useRouter()
+
+        // Propiedades computadas
+        const page = computed(() => {
+            let page = route.query.page ?? 1
+            if(page > pagination.value.last_page){
+                router.replace({
+                    query: {
+                        page: pagination.value.last_page
+                    }
+                })
+                return pagination.value.last_page
+            }
+            return page
+        })
+
+        // Métodos
+        const setPagination = (response) => {
+            pagination.value = {
+                links: response.links,
+                last_page: response.last_page
+            }
+        }
+    
+        const changePage = (url) => {
+            router.replace({
+                query: {
+                    page: url.split('page=')[1]
+                }
+            })
+        }
+
+        return {
+            pagination,
+            page,
+            setPagination,
+            changePage
+        }
+    }
+    ```
+2. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <script>
+    import usePagination from '@/composables/usePagination.js'
+
+    export default {
+        setup() {
+            const {
+                pagination,
+                page,
+                setPagination,
+                changePage
+            } = usePagination()
+
+            return {
+                pagination,
+                page,
+                setPagination,
+                changePage
+            }
+        },
+        data() {
+            ≡
+        },
+        ≡
+    }
+    </script>
+    ```
+
+## Autenticación
 
     ≡
     ```vue

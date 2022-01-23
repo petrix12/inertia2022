@@ -75,7 +75,24 @@
 </template>
 
 <script>
+import usePagination from '@/composables/usePagination.js'
+
 export default {
+    setup() {
+        const {
+            pagination,
+            page,
+            setPagination,
+            changePage
+        } = usePagination()
+
+        return {
+            pagination,
+            page,
+            setPagination,
+            changePage
+        }
+    },
     data() {
         return {
             courses: [],
@@ -86,23 +103,7 @@ export default {
                 category_id: ''
             },
             errors: [],
-            pagination: {},
             search: ''
-        }
-    },
-    computed: {
-        page() {
-            let page = this.$route.query.page ?? 1
-            let last_page = this.pagination.last_page
-            if(page > last_page){
-                this.$router.replace({
-                    query: {
-                        page: this.pagination.last_page
-                    }
-                })
-                return last_page
-            }
-            return page
         }
     },
     watch: {
@@ -127,10 +128,12 @@ export default {
                 .then(response => {
                     let res = response.data
                     this.courses = res.data
-                    this.pagination = {
+
+                    this.setPagination(res)
+                    /* this.pagination = {
                         links: res.links,
                         last_page: res.last_page
-                    }
+                    } */
                     /* this.pagination_links = res.links */
                 })
                 .catch(error => {
@@ -172,13 +175,6 @@ export default {
                     console.log(error)
                 })
         },
-        changePage(url) {
-            this.$router.replace({
-                query: {
-                    page: url.split('page=')[1]
-                }
-            })
-        }
     },
     created() {
         this.getCourses(),
