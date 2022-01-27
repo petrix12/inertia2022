@@ -1,3 +1,4 @@
+import { use } from 'vue-router';
 <template>
     <h1>Editar curso</h1>
     <form @submit.prevent="updateCourse">
@@ -29,25 +30,35 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
     data() {
         return {
             course: {},
             categories: [],
+            user: {}
         }
+    },
+    computed: {
+        ...mapState(['auth'])
     },
     methods: {
         getCourse() {
-            this.axios.get(`https://cursos-prueba.tk/api/courses/${this.$route.params.id}?included=category`)
+            this.axios.get(`/courses/${this.$route.params.id}?included=category,user`)
                 .then(response => {
                     this.course = response.data
+                    this.user = response.data.user
+                    if(this.user.id != this.auth.user.id) {
+                        this.$router.push('/courses')
+                    }
                 })
                 .catch(error => {
                     console.log(error)
                 })
         },
         updateCourse() {
-            this.axios.put(`https://cursos-prueba.tk/api/courses/${this.$route.params.id}`, this.course)
+            this.axios.put(`/courses/${this.$route.params.id}`, this.course)
                  .then(() => {
                     this.$router.push({ name: 'CourseDetails', params: { id: this.$route.params.id } })
                 })
@@ -56,7 +67,7 @@ export default {
                 })
         },
         getCategories() {
-            this.axios.get('https://cursos-prueba.tk/api/categories')
+            this.axios.get('/categories')
                 .then(response => {
                     this.categories = response.data
                 })

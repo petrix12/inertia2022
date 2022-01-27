@@ -3630,6 +3630,997 @@
     ```
 
 ## Autenticación
+### ¿Cómo funciona la autenticación?
+1. Realizar petición http:
+    + URL: http://cursos-prueba.tk/api/login
+    + Método: POST
+    + Body:
+        ```json
+        {
+            "gran_type": "password",
+            "client_id": "956804e5-0b1b-4fea-a567-49df94c6ce0a",
+            "client_secret": "4K56dLk41j1g1TVWfwbOuMrqTppwtQfWlBR9KKuF",
+            "username": "victor@codersfree.com",
+            "password": "12345678"
+        }
+        ```
+
+### Crear ruta de login y register
+1. Modificar archivo de rutas **cursos\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/login',
+            name: 'Login',
+            component: () => import('../views/auth/Login.vue')
+        },
+        {
+            path: '/register',
+            name: 'Register',
+            component: () => import('../views/auth/Register.vue')
+        }
+    ]
+    ≡
+    ```
+2. Crear vista **cursos\src\views\auth\Login.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Login</h1>
+            <div class="card mx-auto">
+                <div class="card-body">
+                    <form @submit.prevent="login">
+                        <div class="mb-3">
+                            <label for="email" class="mb-1">Email</label>
+                            <input type="email" v-model="email" class="form-control" placeholder="Ingresa tu email">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="mb-1">Password</label>
+                            <input type="password" v-model="password" class="form-control" placeholder="Ingresa tu password">
+                        </div>
+
+                        <button class="btn btn-primary">Iniciar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                email: '',
+                password: ''
+            }
+        },
+        methods: {
+            login() {
+                console.log('Inicio de sesión')
+            }
+        }
+    }
+    </script>
+
+    <style scoped>
+        .card {
+            max-width: 32rem;
+        }
+    </style>
+    ```
+3. Crear vista **cursos\src\views\auth\Register.vue**:
+    ```vue
+    <template>
+        <h1>Register</h1>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+4. Modificar componente principal **cursos\src\App.vue**:
+    ```vue
+    <template>
+        <div class="navigation">
+            <router-link to="/">Home</router-link> |
+            <router-link :to="{name: 'CoursesList'}">Cursos</router-link> |
+            <router-link to="/about">About</router-link>
+        </div>
+
+        <div class="navigation">
+            <router-link :to="{name: 'Login'}">Login</router-link> |
+            <router-link :to="{name: 'Register'}">Register</router-link>
+        </div>
+
+        <router-view />
+    </template>
+
+    <style>
+    #app {
+        font-family: Avenir, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: center;
+        color: #2c3e50;
+    }
+
+    .navigation {
+        margin: 30px;
+    }
+
+    .navigation a {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .navigation a.router-link-exact-active {
+        color: #42b983;
+    }
+    </style>
+    ```
+
+### BaseUrl
+1. Modificar **cursos\src\main.js**:
+    ```js
+    ≡
+    axios.defaults.baseURL = 'https://cursos-prueba.tk'
+
+    createApp(App).use(VueAxios, axios).use(store).use(router).mount('#app')
+    ```
+2. Eliminar la url base 'https://cursos-prueba.tk' en las vistas:
+    + **cursos\src\views\courses\CoursesList.vue**.
+    + **cursos\src\views\courses\CourseEdit.vue**.
+    + **cursos\src\views\courses\CourseDetails.vue**.
+3. Modificar vista **cursos\src\views\courses\CourseDetails.vue**:
+    ```vue
+    <template>
+        <h1>{{ course.title }}</h1>
+        <p>{{ course.description }}</p>
+        <p><b>Categoría: </b>{{ category.name }}</p>
+        <router-link :to="{name: 'CourseEdit', params: {id: $route.params.id}}">
+            Editar curso
+        </router-link>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                course: {},
+                category: {}
+            }
+        },
+        methods: {
+            getCourse() {
+                this.axios.get(`/api/courses/${this.$route.params.id}?included=category`)
+                    .then(response => {
+                        this.course = response.data
+                        this.category = response.data.category
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourse()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Soliciar Access token
+1. Modificar vista **cursos\src\views\auth\Login.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Login</h1>
+            <div class="card mx-auto">
+                <div class="card-body">
+                    <form @submit.prevent="login">
+                        <div class="mb-3">
+                            <label for="email" class="mb-1">Email</label>
+                            <input type="email" v-model="email" class="form-control" placeholder="Ingresa tu email">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="mb-1">Password</label>
+                            <input type="password" v-model="password" class="form-control" placeholder="Ingresa tu password">
+                        </div>
+
+                        <button class="btn btn-primary" :class="{ 'disabled': disabled }">Iniciar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                email: 'victor@codersfree.com',
+                password: '12345678',
+                disabled: false
+            }
+        },
+        methods: {
+            login() {
+                this.disabled = true
+                this.axios.post('/api/login', {
+                    gran_type: "password",
+                    client_id: "956804e5-0b1b-4fea-a567-49df94c6ce0a",
+                    client_secret: "4K56dLk41j1g1TVWfwbOuMrqTppwtQfWlBR9KKuF",
+                    username: this.email,
+                    password: this.password
+                })
+                .then(response => {
+                    console.log(response.data)
+                    this.disabled = false
+                })
+            }
+        }
+    }
+    </script>
+
+    <style scoped>
+        .card {
+            max-width: 32rem;
+        }
+    </style>
+    ```
+
+### Almacenar access token en un estado
+1. Modificar tienda **cursos\src\store\index.js**:
+    ```js
+    import { createStore } from 'vuex'
+
+    export default createStore({
+        state: {
+            auth: null
+        },
+        mutations: {
+            setAuth(state, auth) {
+                state.auth = auth
+            }
+        },
+        actions: {
+        },
+        modules: {
+        }
+    })
+    ```
+2. Modificar vista **cursos\src\views\auth\Login.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            {{ auth }}
+            ≡
+        </div>
+    </template>
+
+    <script>
+    import { mapMutations, mapState } from 'vuex'
+
+    export default {
+        data() {
+            return {
+                email: 'victor@codersfree.com',
+                password: '12345678',
+                disabled: false
+            }
+        },
+        computed: {
+            ...mapState(['auth'])
+        },
+        methods: {
+            ...mapMutations(['setAuth']),
+            login() {
+                this.disabled = true
+                this.axios.post('/api/login', {
+                    gran_type: "password",
+                    client_id: "956804e5-0b1b-4fea-a567-49df94c6ce0a",
+                    client_secret: "4K56dLk41j1g1TVWfwbOuMrqTppwtQfWlBR9KKuF",
+                    username: this.email,
+                    password: this.password
+                })
+                .then(response => {
+                    console.log(response.data)
+                    this.setAuth(response.data)
+                    this.disabled = false
+                })
+            }
+        }
+    }
+    </script>
+    ≡
+    ```
+
+### Almacena access token en localstorage
+1. Modificar vista **cursos\src\views\auth\Login.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Login</h1>
+            <div class="card mx-auto">
+                <div class="card-body">
+                    <form @submit.prevent="login">
+                        <div class="mb-3">
+                            <label for="email" class="mb-1">Email</label>
+                            <input type="email" v-model="email" class="form-control" placeholder="Ingresa tu email">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="mb-1">Password</label>
+                            <input type="password" v-model="password" class="form-control" placeholder="Ingresa tu password">
+                        </div>
+
+                        <button class="btn btn-primary" :class="{ 'disabled': disabled }">Iniciar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    import { mapMutations, mapState } from 'vuex'
+
+    export default {
+        data() {
+            return {
+                email: 'victor@codersfree.com',
+                password: '12345678',
+                disabled: false
+            }
+        },
+        computed: {
+            ...mapState(['auth'])
+        },
+        methods: {
+            ...mapMutations(['setAuth']),
+            login() {
+                this.disabled = true
+                this.axios.post('/api/login', {
+                    gran_type: "password",
+                    client_id: "956804e5-0b1b-4fea-a567-49df94c6ce0a",
+                    client_secret: "4K56dLk41j1g1TVWfwbOuMrqTppwtQfWlBR9KKuF",
+                    username: this.email,
+                    password: this.password
+                })
+                .then(response => {
+                    localStorage.setItem("auth", JSON.stringify(response.data))
+                    this.setAuth(response.data)
+                    this.disabled = false
+                    this.$router.push({
+                        name: 'Dashboard'
+                    })
+                })
+            }
+        }
+    }
+    </script>
+
+    <style scoped>
+        .card {
+            max-width: 32rem;
+        }
+    </style>
+    ```
+2. Modificar tienda **cursos\src\store\index.js**:
+    ```js
+    ≡
+    export default createStore({
+        ≡
+        actions: {
+            setAuth({ commit }) {
+                if(localStorage.getItem('auth')){
+                    commit('setAuth', JSON.parse(localStorage.getItem('auth')));
+                }
+            }
+        },
+        ≡
+    })
+    ```
+3. Modificar componente principal **cursos\src\App.vue**:
+    ```vue
+    <template>
+        <div class="navigation">
+            <router-link to="/">Home</router-link> |
+            <router-link :to="{name: 'CoursesList'}">Cursos</router-link> |
+            <router-link to="/about">About</router-link> |
+            <router-link :to="{name: 'Dashboard'}">Dashboard</router-link>
+
+            <div v-if='auth' class="mb-3">
+                <button class="btn btn-danger">
+                    Cerrar sesión
+                </button>
+            </div>
+
+            <div v-else class="navigation">
+                <router-link :to="{name: 'Login'}">Login</router-link> |
+                <router-link :to="{name: 'Register'}">Register</router-link>
+            </div>
+        </div>
+        ≡
+    </template>
+
+    <script>
+    import { mapActions, mapState } from 'vuex'
+
+    export default {
+        computed: {
+            ...mapState(['auth'])
+        },
+        methods: {
+            ...mapActions(['setAuth'])
+        },
+        created() {
+            this.setAuth();
+        }
+    }
+    </script>
+    ≡
+    ```
+4. Crear vista **cursos\src\views\Dashboard.vue**:
+    ```vue
+    <template>
+        <h1>Bienvenido {{ auth.user.name }}</h1>
+    </template>
+
+    <script>
+    import { mapState } from 'vuex'
+
+    export default {
+        computed: {
+            ...mapState(['auth'])
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+5. Modificar archivo de rutas **cursos\src\router\index.js**:
+    ```js
+    ≡
+    {
+        path: '/about',
+        name: 'About',
+        component: () => import('../views/About.vue')
+    },
+    {
+        path: '/dashboard',
+        name: 'Dashboard',
+        component: () => import('../views/Dashboard.vue')
+    },
+    ≡
+    ```
+
+### Proteger rutas
+1. Modificar archivo de rutas **cursos\src\router\index.js**:
+    ```js
+    ≡
+    const routes = [
+        ≡
+        {
+            path: '/dashboard',
+            name: 'Dashboard',
+            component: () => import('../views/Dashboard.vue'),
+            meta: {
+                requiresAuth: true
+            }
+        },
+        {
+            path: '/login',
+            name: 'Login',
+            component: () => import('../views/auth/Login.vue'),
+            beforeEnter: (to, from, next) =>{
+                if(localStorage.getItem('auth')){
+                    next('/dashboard')
+                } else {
+                    next()
+                }
+            }
+        },
+        {
+            path: '/register',
+            name: 'Register',
+            component: () => import('../views/auth/Register.vue')
+        }
+    ]
+    ≡
+    router.beforeEach((to, from, next) => {
+        const protectedRoute = to.matched.some(record => record.meta.requiresAuth)
+        if(protectedRoute && !localStorage.getItem('auth')){
+            next('/login')
+        } else {
+            next()
+        }
+    })
+
+    export default router
+    ```
+
+### Cerrar sesión
+1. Modificar tienda **cursos\src\store\index.js**:
+    ```js
+    ≡
+    actions: {
+		setAuth({ commit }) {
+			if(localStorage.getItem('auth')){
+				commit('setAuth', JSON.parse(localStorage.getItem('auth')));
+			}
+		},
+		logout() {
+			localStorage.removeItem('auth')
+			location.reload()
+		}
+    },
+    ≡
+    ```
+2. Modificar componente principal **cursos\src\App.vue**:
+    ```vue
+    <template>
+        ≡
+        <div v-if='auth' class="mb-3">
+            <button class="btn btn-danger" @click="logout">
+                Cerrar sesión
+            </button>
+        </div>
+        ≡
+    </template>
+
+    <script>
+    ≡
+    export default {
+        ≡
+        methods: {
+            ...mapActions(['setAuth', 'logout'])
+        },
+        ≡
+    }
+    </script>
+    ≡
+    ```
+
+### Mandar credenciales
+1. Modificar **cursos\src\main.js**:
+    ```js
+    ≡
+    axios.defaults.withCredentials = true
+    axios.defaults.baseURL = 'https://cursos-prueba.tk/api/v2'
+    ≡
+    ```
+2. Eliminar la cadena **'/api'** en la peticiones http en los archivos:
+    + cursos\src\views\courses\CoursesList.vue
+    + cursos\src\views\courses\CourseEdit.vue
+    + cursos\src\views\courses\CourseDetails.vue
+    + cursos\src\views\auth\Login.vue
+3. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        ≡
+    </template>
+
+    <script>
+    ≡
+    export default {
+        ≡
+        methods: {
+            ≡
+            saveCourse() {
+                this.axios.post('/courses', this.course)
+                    .then(() => {
+                        /* this.courses.push(response.data) */
+                        this.getCourses()
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                        this.errors = []
+                    })
+                    .catch(error => {
+                        console.log(error.response.data)
+                        /* this.errors = Object.values(error.response.data.errors).flat() */
+                    })
+            },
+            ≡
+        },
+        ≡
+    }
+    </script>
+    ≡
+    ```
+4. Modificar vista principal **cursos\src\App.vue**:
+    ```vue
+    <script>
+    ≡
+    export default {
+        ≡
+        ≡
+        watch: {
+            auth(newValue) {
+                if(newValue){
+                    this.axios.defaults.headers.common['Authorization'] = 'Bearer ' + newValue.token.access_token	
+                }
+            }
+        },
+        created() {
+            this.setAuth();
+        }
+    }
+    </script>
+    ≡
+    ```
+5. Modificar vista **cursos\src\views\courses\CourseDetails.vue**:
+    ```vue
+    <template>
+        ≡
+        <p><b>Categoría: </b>{{ category.name }}</p>
+        <p><b>Autor: </b>{{ user.name }}</p>
+        ≡
+    </template>
+
+    <script>
+    export default {
+        data() {
+            return {
+                course: {},
+                category: {},
+                user: {}
+            }
+        },
+        methods: {
+            getCourse() {
+                this.axios.get(`/courses/${this.$route.params.id}?included=category,user`)
+                    .then(response => {
+                        this.course = response.data
+                        this.category = response.data.category
+                        this.user = response.data.user
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        ≡
+    }
+    </script>
+    ≡
+    ```
+
+### Restringir funcionalidades
+1. Modificar vista **cursos\src\views\courses\CoursesList.vue**:
+    ```vue
+    <template>
+        <div class="container">
+            <h1>Lista de cursos</h1>
+            <ul v-if="errors.length > 0">
+                <li v-for="error in errors" :key="error.id">
+                    {{ error }}
+                </li>
+            </ul>
+            <div v-if="auth" class="mb-4 card">
+                <form @submit.prevent="saveCourse" class="card-body">
+                    <div class="mb-2">
+                        <label for="title">Título</label>
+                        <br>
+                        <input class="form-control" v-model="course.title" id="title" type="text" placeholder="Ingrese el título del curso">
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label for="description">Descripción</label>
+                        <br>
+                        <textarea class="form-control" v-model="course.description" id="description" type="text" placeholder="Ingrese la descripción del curso"></textarea>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label for="categories">Categoría</label>
+                        <br>
+                        <select class="form-control" name="" id="categories" v-model="course.category_id">
+                            <option value="" selected disabled>Seleccione una categoría</option>
+                            <option v-for="category in categories" :key="`category-${category.id}`" :value="category.id">
+                                {{ category.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                </form>
+            </div>
+            <div class="mb-4">
+                <h2>Buscar</h2>
+                <input v-model="search" type="text" placerholder="Ingrese una palabra para filtrar" class="form-control">
+            </div>
+            <ul>
+                <li v-for="course in courses" :key="`course-${course.id}`" class="mb-2">
+                    <router-link :to="{ name: 'CourseDetails', params: { id: course.id } }">
+                        {{ course.title }}
+                    </router-link>
+                    -
+                    <button v-if="auth && course.user.id == auth.user.id" @click="deleteCourse(course.id)" class="btn btn-danger btn-sm">Eliminar</button>
+                </li>
+            </ul>
+
+            <!-- paginación -->
+            <div class="d-flex justify-content-center">
+                <nav aria-label="...">
+                    <ul class="pagination">
+                        <li 
+                            v-for="pagination_link in pagination.links"
+                            :key="'pagination_link-' + pagination_link.label"
+                            class="page-item"
+                            :class="{
+                                'disabled': pagination_link.url == null,
+                                'active': pagination_link.active
+                            }"
+                        >
+                            <a 
+                                class="page-link"
+                                @click="changePage(pagination_link.url)"
+                                v-html="pagination_link.label" 
+                                style="cursor: pointer"
+                            ></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    import usePagination from '@/composables/usePagination.js'
+    import { mapState } from 'vuex'
+
+    export default {
+        setup() {
+            const {
+                pagination,
+                page,
+                setPagination,
+                changePage
+            } = usePagination()
+
+            return {
+                pagination,
+                page,
+                setPagination,
+                changePage
+            }
+        },
+        data() {
+            return {
+                courses: [],
+                categories: [],
+                course: {
+                    title: '',
+                    description: '',
+                    category_id: ''
+                },
+                errors: [],
+                search: ''
+            }
+        },
+        computed: {
+            ...mapState(['auth'])
+        },
+        watch: {
+            page() {
+            this.getCourses() 
+            },
+            search() {
+                this.getCourses()
+            }
+        },
+        methods: {
+            getCourses() {
+                this.axios.get(`/courses`, {
+                    params: {
+                        included: 'user',
+                        sort: '-id',
+                        per_page: 10,
+                        page: this.page,
+                        'filter[title]': this.search
+                    }
+                })
+                    .then(response => {
+                        let res = response.data
+                        this.courses = res.data
+
+                        this.setPagination(res)
+                        /* this.pagination = {
+                            links: res.links,
+                            last_page: res.last_page
+                        } */
+                        /* this.pagination_links = res.links */
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            getCategories() {
+                this.axios.get('/categories')
+                    .then(response => {
+                        this.categories = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            saveCourse() {
+                this.axios.post('/courses', this.course)
+                    .then(() => {
+                        /* this.courses.push(response.data) */
+                        this.getCourses()
+                        this.course = {
+                            title: '',
+                            description: '',
+                            category_id: ''
+                        }
+                        this.errors = []
+                    })
+                    .catch(error => {
+                        console.log(error.response.data)
+                        /* this.errors = Object.values(error.response.data.errors).flat() */
+                    })
+            },
+            deleteCourse(id) {
+                this.axios.delete(`/courses/${id}`)
+                    .then(() => {
+                        /* this.courses = this.courses.filter(course => course.id != id) */
+                        this.getCourses()
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+        },
+        created() {
+            this.getCourses(),
+            this.getCategories()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+2. Modificar vista **cursos\src\views\courses\CourseDetails.vue**:
+    ```vue
+    <template>
+        <h1>{{ course.title }}</h1>
+        <p>{{ course.description }}</p>
+        <p><b>Categoría: </b>{{ category.name }}</p>
+        <p><b>Autor: </b>{{ user.name }}</p>
+
+        <div v-if="auth && user.id == auth.user.id">
+            <router-link :to="{name: 'CourseEdit', params: {id: $route.params.id}}">
+                Editar curso
+            </router-link>
+        </div>
+    </template>
+
+    <script>
+    import { mapState } from 'vuex'
+
+    export default {
+        data() {
+            return {
+                course: {},
+                category: {},
+                user: {}
+            }
+        },
+        computed: {
+            ...mapState(['auth'])
+        },
+        methods: {
+            getCourse() {
+                this.axios.get(`/courses/${this.$route.params.id}?included=category,user`)
+                    .then(response => {
+                        this.course = response.data
+                        this.category = response.data.category
+                        this.user = response.data.user
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            }
+        },
+        created() {
+            this.getCourse()
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+3. Modificar archivo de rutas **cursos\src\router\index.js**:
+    ```js
+    ≡
+    {
+        path: '/courses/:id/edit',
+        name: 'CourseEdit',
+        component: () => import('../views/courses/CourseEdit'),
+        meta: {
+        requiresAuth: true
+        }
+    },
+    ≡
+    ```
+4. Modificar vista **cursos\src\views\courses\CourseEdit.vue**:
+    ```vue
+    ≡
+    <script>
+    import { mapState } from 'vuex'
+
+    export default {
+        data() {
+            return {
+                course: {},
+                categories: [],
+                user: {}
+            }
+        },
+        computed: {
+            ...mapState(['auth'])
+        },
+        methods: {
+            getCourse() {
+                this.axios.get(`/courses/${this.$route.params.id}?included=category,user`)
+                    .then(response => {
+                        this.course = response.data
+                        this.user = response.data.user
+                        if(this.user.id != this.auth.user.id) {
+                            this.$router.push('/courses')
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+            },
+            ≡
+        },
+        ≡
+    }
+    </script>
+    ```
+
+
+## Introducción a Inertia
+### Introducción
++ **Contenido**: sobre Inertia.
+
+### Instalar Inertia con Jetstream
+### Estructura del proyecto
+### Rutas y vistas
+### Metaetiquetas
+
+
+## Proyecto
+### Presentación del proyecto
+
+
+
+
 
     ≡
     ```vue

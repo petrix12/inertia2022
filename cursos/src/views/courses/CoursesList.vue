@@ -6,7 +6,7 @@
                 {{ error }}
             </li>
         </ul>
-        <div class="mb-4 card">
+        <div v-if="auth" class="mb-4 card">
             <form @submit.prevent="saveCourse" class="card-body">
                 <div class="mb-2">
                     <label for="title">Título</label>
@@ -44,7 +44,7 @@
                     {{ course.title }}
                 </router-link>
                 -
-                <button @click="deleteCourse(course.id)" class="btn btn-danger btn-sm">Eliminar</button>
+                <button v-if="auth && course.user.id == auth.user.id" @click="deleteCourse(course.id)" class="btn btn-danger btn-sm">Eliminar</button>
             </li>
         </ul>
 
@@ -76,6 +76,7 @@
 
 <script>
 import usePagination from '@/composables/usePagination.js'
+import { mapState } from 'vuex'
 
 export default {
     setup() {
@@ -106,6 +107,9 @@ export default {
             search: ''
         }
     },
+    computed: {
+        ...mapState(['auth'])
+    },
     watch: {
         page() {
            this.getCourses() 
@@ -116,9 +120,9 @@ export default {
     },
     methods: {
         getCourses() {
-            /* this.axios.get(`https://cursos-prueba.tk/api/courses?sort=-id&per_page=10&page=${this.page}&filter[title]=${this.search}`) */
-            this.axios.get(`https://cursos-prueba.tk/api/courses`, {
+            this.axios.get(`/courses`, {
                 params: {
+                    included: 'user',
                     sort: '-id',
                     per_page: 10,
                     page: this.page,
@@ -141,7 +145,7 @@ export default {
                 })
         },
         getCategories() {
-            this.axios.get('https://cursos-prueba.tk/api/categories')
+            this.axios.get('/categories')
                 .then(response => {
                     this.categories = response.data
                 })
@@ -150,7 +154,7 @@ export default {
                 })
         },
         saveCourse() {
-            this.axios.post('https://cursos-prueba.tk/api/courses', this.course)
+            this.axios.post('/courses', this.course)
                  .then(() => {
                     /* this.courses.push(response.data) */
                     this.getCourses()
@@ -162,11 +166,12 @@ export default {
                     this.errors = []
                 })
                 .catch(error => {
-                    this.errors = Object.values(error.response.data.errors).flat()
+                    console.log(error.response.data)
+                    /* this.errors = Object.values(error.response.data.errors).flat() */
                 })
         },
         deleteCourse(id) {
-            this.axios.delete(`https://cursos-prueba.tk/api/courses/${id}`)
+            this.axios.delete(`/courses/${id}`)
                  .then(() => {
                     /* this.courses = this.courses.filter(course => course.id != id) */
                     this.getCourses()
