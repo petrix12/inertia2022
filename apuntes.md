@@ -4610,14 +4610,77 @@
 + **Contenido**: sobre Inertia.
 
 ### Instalar Inertia con Jetstream
-### Estructura del proyecto
-### Rutas y vistas
-### Metaetiquetas
+1. Crear proyecto **inertia**:
+    1. $ laravel new inertia --jet
+        + Which Jetstream stack do you prefer?: [1] inertia
+        + Will your application use teams? (yes/no) [no]: no
+2. En caso de ser necesario crear un virtual host para el proyecto **inertia**:
+    + http://inertia.test
+3. Crear base de datos **inertia**.
+4. Ejecutar migraciones:
+    + $ php artisan migrate
+5. Asegurar que la varible de entorno **APP_URL=http://inertia.test** en **.env** coincida con el virtual host.
+6. Cambiar la siguiente variable de entorno en **.env**:
+    ```env
+    FILESYSTEM_DRIVER=public
+    ```
 
+### Estructura del proyecto
+1. Modificar **.env**:
+    ```env
+    APP_NAME="Explorando Inertia"
+    ≡
+    ```
+2. Modificar **config\app.php**:
+    ```php
+    ≡
+    'locale' => 'es',
+    ≡
+    ```
+3. Ejecutar:
+    + $ npm run watch
+
+### Rutas y vistas
++ **Contenido**: sobre rutas y vistas con inertia.
+
+### Metaetiquetas
+1. Modificar vista **resources\js\Pages\Welcome.vue**:
+    ```vue
+    <template>
+        <!-- <Head title="Welcome" /> -->
+        <Head>
+            <title>Welcome HS++</title>
+            <meta name="description" content="Página principal de HS++">
+        </Head>
+        ≡
+    </template>
+
+    <style scoped>
+        ≡
+    </style>
+
+    <script>
+        ≡
+        export default defineComponent({
+            components: {
+                Head,
+                Link,
+            },
+
+            props: {
+                canLogin: Boolean,
+                canRegister: Boolean,
+                laravelVersion: String,
+                phpVersion: String,
+                user: Object
+            }
+        })
+    </script>
+    ```
 
 ## Proyecto
 ### Presentación del proyecto
-
++ **Contenido**: sobre lo que haremos en esta sección.
 
 
 
