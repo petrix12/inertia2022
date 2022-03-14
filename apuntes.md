@@ -4606,6 +4606,7 @@
 
 
 ## Introducción a Inertia
++ **Respositorio**: https://github.com/coders-free/inertia
 ### Introducción
 + **Contenido**: sobre Inertia.
 
@@ -4679,15 +4680,1487 @@
     ```
 
 ## Proyecto
++ **Respositorio**: https://github.com/coders-free/inertia
 ### Presentación del proyecto
 + **Contenido**: sobre lo que haremos en esta sección.
 
-
-
-
+### Estructura del proyecto
+1. Abrir el proyecto **inertia** de la sección anterior.
+2. Crear los modelos **Organization**, **Country**, **Contact** (con: factory, migración, seeder y controlador):
+    + $ php artisan make:model Organization -a
+    + $ php artisan make:model Country -a
+    + $ php artisan make:model Contact -a
+3. Establecer campos de la migración **database\migrations\2022_03_09_122425_create_organizations_table.php**:
+    ```php
     ≡
-    ```vue
+    Schema::create('organizations', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->timestamps();
+    });
+    ≡
+    ```
+4. Establecer campos de la migración **database\migrations\2022_03_09_122437_create_countries_table.php**:
+    ```php
+    ≡
+    Schema::create('countries', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->timestamps();
+    });
+    ≡
+    ```
+5. Establecer campos de la migración **database\migrations\2022_03_09_122451_create_contacts_table.php**:
+    ```php
+    ≡
+    Schema::create('contacts', function (Blueprint $table) {
+        $table->id();
+        $table->string('first_name');
+        $table->string('last_name');
+        $table->foreignId('organization_id')->constrained();
+        $table->string('email');
+        $table->string('phone');
+        $table->string('address');
+        $table->string('city');
+        $table->string('state');
+        $table->foreignId('country_id')->constrained();
+        $table->string('postal_code');
+        $table->timestamps();
+    });
+    ≡
+    ```
+6. Ejecutar migraciones:
+    + $ php artisan migrate
+
+### Llenar con datos falsos
+1. Crear factory **database\factories\CountryFactory.php**:
+    ```php
+    ≡
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->country()
+        ];
+    }
+    ≡
+    ```
+2. Crear factory **database\factories\OrganizationFactory.php**:
+    ```php
+    ≡
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->company
+        ];
+    }
+    ≡
+    ```
+3. Crear factory **database\factories\ContactFactory.php**:
+    ```php
+    ≡
+    public function definition()
+    {
+        return [
+            'first_name' => $this->faker->firstName,
+            'last_name' => $this->faker->lastName,
+            'organization_id' => Organization::all()->random()->id,
+            'email' => $this->faker->email,
+            'phone' => $this->faker->phoneNumber,
+            'address' => $this->faker->address,
+            'city' => $this->faker->sentence(),
+            'state' => $this->faker->state,
+            'country_id' => Country::all()->random()->id,
+            'postal_code' => $this->faker->postcode
+        ];
+    }
+    ≡
+    ```
+4. Modificar el seeder **database\seeders\DatabaseSeeder.php** para que ejecute todos los factories:    
+    ```php
+    ≡
+    use App\Models\Contact;
+    use App\Models\Country;
+    use App\Models\Organization;
+    use Illuminate\Database\Seeder;
+
+    class DatabaseSeeder extends Seeder
+    {
+        ≡
+        public function run()
+        {
+            // \App\Models\User::factory(10)->create();
+
+            Country::factory(5)->create();
+            Organization::factory(20)->create();
+            Contact::factory(100)->create();
+        }
+    }
+    ```
+5. Reestablecer la base de datos y ejecutar los seeders:
+    + $ php artisan migrate:fresh --seed
+
+
+### Habilitar asignación masiva
+1. Habilitar asignación masiva en el modelo **app\Models\Organization.php**:    
+    ```php
+    ≡
+    class Organization extends Model
+    {
+        ≡
+        protected $fillable = [
+            'name'
+        ];
+    }
+    ```
+2. Habilitar asignación masiva en el modelo **app\Models\Country.php**:    
+    ```php
+    ≡
+    class Country extends Model
+    {
+        ≡
+        protected $fillable = [
+            'name'
+        ];
+    }
+    ```
+3. Habilitar asignación masiva en el modelo **app\Models\Contact.php**:    
+    ```php
+    ≡
+    class Contact extends Model
+    {
+        ≡
+        protected $fillable = [
+            'first_name',
+            'last_name',
+            'organization_id',
+            'email',
+            'phone',
+            'address',
+            'city',
+            'state',
+            'country_id',
+            'postal_code'
+        ];
+    }
     ```
 
+### Crear rutas
+1. Modificar el archivo de rutas **routes\web.php**: 
+    ```php
+    ≡
+    use App\Http\Controllers\ContactController;
+    use Illuminate\Foundation\Application;
+    use Illuminate\Support\Facades\Route;
+    use Inertia\Inertia;
+    ≡
 
+    Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
+    Route::get('contacts/create', [ContactController::class, 'create'])->name('contacts.create');
+    Route::post('contacts', [ContactController::class, 'store'])->name('contacts.store');
+    Route::get('contacts/{contact}/edit', [ContactController::class, 'edit'])->name('contacts.edit');
+    Route::put('contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
+    Route::delete('contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 
+    Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+    ```
+2. Crear vista **resources\js\Pages\Contacts\Index.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1 class="text-xl font-semibold">Lista de contactos</h1>
+        </div>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+3. Crear vista **resources\js\Pages\Contacts\Create.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Formulario para crear contacto</h1>
+        </div>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+4. Crear vista **resources\js\Pages\Contacts\Edit.vue**:
+    ```vue
+    <template>
+        <div>
+            <h1>Formulario para editar contacto</h1>
+        </div>
+    </template>
+
+    <script>
+    export default {
+
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+5. Programar controlador **app\Http\Controllers\ContactController.php**: 
+    ```php
+    ≡
+    use Inertia\Inertia;
+
+    class ContactController extends Controller
+    {
+        ≡
+        public function index()
+        {
+            return Inertia::render('Contacts/Index');
+        }
+        ≡
+        public function create()
+        {
+            return Inertia::render('Contacts/Create');
+        }
+        ≡
+        public function edit(Contact $contact)
+        {
+            return Inertia::render('Contacts/Edit');
+        }
+        ≡
+    }
+    ≡
+    ```
+6. Compilar las vistas de Vue:
+    + $ npm run watch
+
+### Plantillas
+1. Modificar plantilla **resources\js\Layouts\AppLayout.vue**:   
+    ```vue
+    <template>
+        <div>
+            ≡
+            <div class="min-h-screen bg-gray-100">
+                <nav class="bg-white border-b border-gray-100">
+                    <!-- Primary Navigation Menu -->
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between h-16">
+                            <div class="flex">
+                                <!-- Logo -->
+                                <div class="shrink-0 flex items-center">
+                                    <Link :href="route('dashboard')">
+                                        <jet-application-mark class="block h-9 w-auto" />
+                                    </Link>
+                                </div>
+
+                                <!-- Navigation Links -->
+                                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                    <jet-nav-link :href="route('dashboard')" :active="route().current('dashboard')">
+                                        Dashboard
+                                    </jet-nav-link>
+
+                                    <jet-nav-link :href="route('contacts.index')" :active="route().current('contacts.*')">
+                                        Contacts
+                                    </jet-nav-link>
+                                </div>
+                            </div>
+
+                            <div class="hidden sm:flex sm:items-center sm:ml-6">
+
+                                <!-- Settings Dropdown -->
+                                <div class="ml-3 relative">
+                                    <jet-dropdown align="right" width="48">
+                                        <template #trigger>
+                                            <button v-if="$page.props.jetstream.managesProfilePhotos" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
+                                                <img class="h-8 w-8 rounded-full object-cover" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name" />
+                                            </button>
+
+                                            <span v-else class="inline-flex rounded-md">
+                                                <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition">
+                                                    {{ $page.props.user.name }}
+
+                                                    <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            </span>
+                                        </template>
+
+                                        <template #content>
+                                            <!-- Account Management -->
+                                            <div class="block px-4 py-2 text-xs text-gray-400">
+                                                Manage Account
+                                            </div>
+
+                                            <jet-dropdown-link :href="route('profile.show')">
+                                                Profile
+                                            </jet-dropdown-link>
+
+                                            <div class="border-t border-gray-100"></div>
+
+                                            <!-- Authentication -->
+                                            ≡
+                                        </template>
+                                    </jet-dropdown>
+                                </div>
+                            </div>
+
+                            <!-- Hamburger -->
+                            ≡
+                        </div>
+                    </div>
+
+                    <!-- Responsive Navigation Menu -->
+                    <div :class="{'block': showingNavigationDropdown, 'hidden': ! showingNavigationDropdown}" class="sm:hidden">
+                        <div class="pt-2 pb-3 space-y-1">
+                            <jet-responsive-nav-link :href="route('dashboard')" :active="route().current('dashboard')">
+                                Dashboard
+                            </jet-responsive-nav-link>
+
+                            <jet-responsive-nav-link :href="route('contacts.index')" :active="route().current('contacts.*')">
+                                Contacts
+                            </jet-responsive-nav-link>
+                        </div>
+
+                        <!-- Responsive Settings Options -->
+                        <div class="pt-4 pb-1 border-t border-gray-200">
+                            <div class="flex items-center px-4">
+                                <div v-if="$page.props.jetstream.managesProfilePhotos" class="shrink-0 mr-3" >
+                                    <img class="h-10 w-10 rounded-full object-cover" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name" />
+                                </div>
+
+                                <div>
+                                    <div class="font-medium text-base text-gray-800">{{ $page.props.user.name }}</div>
+                                    <div class="font-medium text-sm text-gray-500">{{ $page.props.user.email }}</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 space-y-1">
+                                <jet-responsive-nav-link :href="route('profile.show')" :active="route().current('profile.show')">
+                                    Profile
+                                </jet-responsive-nav-link>
+
+                                <!-- Authentication -->
+                                ≡
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Page Heading -->
+                ≡
+
+                <!-- Page Content -->
+                ≡
+            </div>
+        </div>
+    </template>
+
+    <script>
+        ≡
+    </script>
+    ```
+2. Modificar archivo de configuración **config\jetstream.php**:
+    ```php
+    ≡
+    'features' => [
+        // Features::termsAndPrivacyPolicy(),
+        Features::profilePhotos(),
+        // Features::api(),
+        // Features::teams(['invitations' => true]),
+        Features::accountDeletion(),
+    ],
+    ≡
+    ```
+3. Modificar vista **resources\js\Pages\Contacts\Index.vue**:    
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Lista de contactos">
+                <template #header>
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        Contactos
+                    </h2>
+                </template>
+                <h1 class="text-xl font-semibold">Lista de contactos</h1>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+
+    export default {
+        components: {
+            AppLayout
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+4. Modificar vista **resources\js\Pages\Contacts\Create.vue**:    
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Crear contacto">
+                <template #header>
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        Contactos
+                    </h2>
+                </template>
+                <h1>Formulario para crear contacto</h1>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+
+    export default {
+        components: {
+            AppLayout
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+5. Modificar vista **resources\js\Pages\Contacts\Edit.vue**:    
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Editar contacto">
+                <template #header>
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        Contactos
+                    </h2>
+                </template>
+                <h1>Formulario para editar contacto</h1>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+
+    export default {
+        components: {
+            AppLayout
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Middleware auth
+1. Modificar controlador **app\Http\Controllers\ContactController.php**:
+    ```php
+    ≡
+    class ContactController extends Controller
+    {
+        public function __construct(){
+            $this->middleware('auth');
+        }
+        ≡
+    }
+    ```
+
+### Pasar parámetros a una vista
+1. Modificar controlador **app\Http\Controllers\ContactController.php**:
+    ```php
+    ≡
+    public function index()
+    {
+        $contacts = Contact::all();
+        return Inertia::render('Contacts/Index', compact('contacts'));
+    }
+    ≡
+    public function edit(Contact $contact)
+    {
+        return Inertia::render('Contacts/Edit', compact('contact'));
+    }
+    ≡
+    ```
+2. Modificar la vista **resources\js\Pages\Contacts\Index.vue**:
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Lista de contactos">
+                ≡
+                <pre>
+                    {{ contacts }}
+                </pre>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+
+    export default {
+        components: {
+            AppLayout
+        },
+        props: {
+            contacts: {
+                type: Array,
+                required: true
+            }
+        }
+    }
+    </script>
+    ≡
+    ```
+3. Modificar la vista **resources\js\Pages\Contacts\Edit.vue**:
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Editar contacto">
+                ≡
+                <pre>
+                    {{ contact }}
+                </pre>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+
+    export default {
+        components: {
+            AppLayout
+        },
+        props: {
+            contact: {
+                type: Object,
+                required: true
+            }
+        }
+    }
+    </script>
+    ≡
+    ```
+
+### Listar registros
++ Componentes gratuitos de Tailwind UI: https://tailwindui.com/preview
++ Demo de un dasboard de Inertia: https://demo.inertiajs.com
+1. Modificar la vista **resources\js\Pages\Contacts\Index.vue**:
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Lista de contactos">
+                <template #header>
+                    ≡
+                </template>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <!-- This example requires Tailwind CSS v2.0+ -->
+                    <div class="flex flex-col">
+                        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                                                <th scope="col" class="relative px-6 py-3">
+                                                    <span class="sr-only">Edit</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr v-for="contact in contacts" :key="contact.id">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ contact.first_name }} {{ contact.last_name }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ contact.organization.name }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ contact.city }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ contact.phone }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <a href="#" class="text-indigo-600 hover:text-indigo-900">
+                                                        >
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    ≡
+    ```
+2. Crear relación entre **organization_id** (Modelo Contact) y **name** (Modelo Organization) en **app\Models\Contact.php**:
+    ```php
+    ≡
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class);
+    }
+    ≡
+    ```
+3. Crear relación entre **country_id** (Modelo Contact) y **name** (Modelo Country) en **app\Models\Contact.php**:
+    ```php
+    ≡
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+    ≡
+    ```
+4. Modificar el controlador **app\Http\Controllers\ContactController.php**:
+    ```php
+    ≡
+    public function index()
+    {
+        $contacts = Contact::with('organization')->get();
+        return Inertia::render('Contacts/Index', compact('contacts'));
+    }
+    ≡
+    ```
+5. Descargar el recurso de **fontawesome** de la lección y ubicarlo en la carpeta **vendor**.
+    + **Nota**: cuando se pase el proyecto a producción se deberá pasar manualmente este recurso.
+6. Modificar **resources\views\app.blade.php**:
+    ```php
+    ≡
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+
+    {{-- fontawesome --}}
+    <link rel="stylesheet" href="{{asset('vendor/fontawesome-free/css/all.min.css')}}">
+    ≡
+    ```
+
+### Paginacion
+1. Evitar que los archivos del proyecto queden cacheados modificando **resources\views\app.blade.php**:
+    ```php
+    ≡
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ mix('css/app.css') . '?version=' . Str::random() }}">
+    ≡
+    <!-- Scripts -->
+    @routes
+    <script src="{{ mix('js/app.js') . '?version=' . Str::random() }}" defer></script>
+    ≡
+    ```
+    + **Nota**: estos cambios se deben deshacer en producción.
+2. Modificar el controlador **app\Http\Controllers\ContactController.php**:
+    ```php
+    ≡
+    public function index()
+    {
+        $contacts = Contact::with('organization')->paginate();
+        return Inertia::render('Contacts/Index', compact('contacts'));
+    }
+    ≡
+    ```
+3. Modificar la vista **resources\js\Pages\Contacts\Index.vue**:
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Lista de contactos">
+                ≡
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <!-- This example requires Tailwind CSS v2.0+ -->
+                    <div class="flex flex-col">
+                        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        ≡
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr v-for="contact in contacts.data" :key="contact.id">
+                                                ≡
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <pagination :pagination="contacts" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import Pagination from '@/Components/Pagination.vue'
+
+    export default {
+        components: {
+            AppLayout,
+            Pagination
+        },
+        props: {
+            contacts: Object,
+        }
+    }
+    </script>
+    ≡
+    ```
+4. Crear componente **resources\js\Components\Pagination.vue**:
+    ```vue
+    <template>
+        <!-- This example requires Tailwind CSS v2.0+ -->
+        <div v-if="pagination.links.length > 3" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Previous </a>
+                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Next </a>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Mostrando
+                        <span class="font-medium">{{ pagination.from }}</span>
+                        hasta
+                        <span class="font-medium">{{ pagination.to }}</span>
+                        de
+                        <span class="font-medium">{{ pagination.total }}</span>
+                        resultados
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <template v-for="(link, key) in pagination.links">
+                            <div :key="key" v-if="link.url == null" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium" v-html="link.label">
+                            </div>
+                            <Link :key="'link-' + key" 
+                                v-else 
+                                :href="link.url" 
+                                class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                                :class="link.active ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
+                                v-html="link.label" 
+                            />
+                        </template>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    import { Link } from '@inertiajs/inertia-vue3'
+
+    export default {
+        components: {
+            Link
+        },
+        props: {
+            pagination: Object
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Implementar buscador
+1. Modificar la vista **resources\js\Pages\Contacts\Index.vue**:
+    ```vue
+    ≡
+    <template>
+        <div>
+            <app-layout title="Lista de contactos">
+                ≡
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <!-- This example requires Tailwind CSS v2.0+ -->
+                    <div class="flex flex-col">
+                        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+
+                                    <div class="px-6 py-4 flex items-center">
+                                        <Input v-model="search" type="text" class="flex-1" placeholder="Ingres texto para filtrar" />
+                                    </div>
+
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        ≡
+                                    </table>
+                                    <pagination :pagination="contacts" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import Pagination from '@/Components/Pagination.vue'
+    import Input from '@/Jetstream/Input.vue'
+    import pickBy from 'lodash/pickBy'
+
+    export default {
+        components: {
+            AppLayout,
+            Pagination,
+            Input
+        },
+        data() {
+            return {
+                search: this.filters.search
+            }
+        },
+        watch: {
+            // Se mantiene a la escucha de cualquier cambio en search
+            search($value) {
+                this.$inertia.get('/contacts', pickBy({
+                    search: $value 
+                }), {
+                    preserveState: true
+                })
+            }
+        },
+        props: {
+            filters: Object,
+            contacts: Object
+        }
+    }
+    </script>
+    ≡
+    ```
+2. Modificar el controlador **app\Http\Controllers\ContactController.php**:
+    ```php
+    ≡
+    use App\Models\Contact;
+    use App\Http\Requests\StoreContactRequest;
+    use App\Http\Requests\UpdateContactRequest;
+    use Illuminate\Http\Request;
+    use Inertia\Inertia;
+
+    class ContactController extends Controller
+    {
+        ≡
+        public function index(Request $request)
+        {
+            $filters = $request->all('search');
+            $contacts = Contact::with('organization')
+                ->filter($filters)
+                ->paginate();
+            return Inertia::render('Contacts/Index', compact('contacts', 'filters'));
+        }
+        ≡
+    }
+    ```
+3. Agregar un Query Scope para filtrar contactos en el modelo **app\Models\Contact.php**:
+    ```php
+    ≡
+    // Query Scope para filtrar contactos
+    public function scopeFilter($query, $filters){
+        $query->when($filters['search'] ?? null, function($query, $search){
+            $query->where('first_name', 'LIKE', '%' . $search . '%')
+                ->orWhere('last_name', 'LIKE', '%' . $search . '%')
+                ->orWhere('city', 'LIKE', '%' . $search . '%')
+                ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                ->orWhereHas('organization', function($query) use ($search){
+                    $query->where('name', 'LIKE', '%' . $search . '%');
+                });
+        });
+    }
+    ≡
+    ```
+
+### Agregar registros
+1. Modificar vista **resources\js\Pages\Contacts\Index.vue**:
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Lista de contactos">
+                ≡
+                <div class="container py-12">
+                    <!-- This example requires Tailwind CSS v2.0+ -->
+                    <div class="flex flex-col">
+                        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+
+                                    <div class="px-6 py-4 flex items-center">
+                                        <Input v-model="search" type="text" class="flex-1" placeholder="Ingres texto para filtrar" />
+                                        <Link :href="route('contacts.create')" class="ml-4 flex-shrink-0 btn btn-blue">Nuevo</Link>
+                                    </div>
+
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            ≡
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            ≡
+                                        </tbody>
+                                    </table>
+                                    <pagination :pagination="contacts" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    ≡
+    import { Link } from '@inertiajs/inertia-vue3'
+
+    export default {
+        components: {
+            ≡
+            Link
+        },
+        data() {
+            ≡
+        },
+        watch: {
+            ≡
+        },
+        props: {
+            ≡
+        }
+    }
+    </script>
+    ≡
+    ```
+2. Crear archivo de estilo **resources\css\buttons.css**:
+    ```css
+    .btn {
+        @apply font-bold py-2 px-4 rounded;
+    }
+
+    .btn-blue {
+        @apply bg-blue-500 text-white hover:bg-blue-700;
+    }
+
+    .btn-indigo {
+        @apply bg-indigo-500 text-white hover:bg-indigo-700;
+    }
+    ```
+3. Crear archivo de estilo **resources\css\commom.css**:
+    ```css
+    .container{
+        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    }
+    ```
+4. Crear archivo de estilo **resources\css\forms.css**:
+    ```css
+    .form-control {
+        @apply border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm;
+    }
+    ```
+5. Importar los estilos anteriores en **resources\css\app.css**:
+    ```css
+    ≡
+    @import 'buttons.css';
+    @import 'commom.css';
+    @import 'forms.css';
+    ```
+6. Modificar la vista **resources\js\Pages\Contacts\Create.vue**:
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Crear contacto">
+                <template #header>
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        Contactos
+                    </h2>
+                </template>
+
+                <div class="container py-12">
+                    <h1 class="text-3xl font-semibold text-gray-700 mb-3">
+                        <span class="text-indigo-500">Contacts /</span> Create
+                    </h1>
+
+                    <div class="bg-white px-6 py-8 rounded-lg shadow">
+                        <!-- {{ this.$page.props.errors }} -->
+                        <jet-validation-errors />
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label>
+                                    First Name
+                                    <Input v-model="contact.first_name" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Last Name
+                                    <Input v-model="contact.last_name" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Organization
+                                    <select v-model="contact.organization_id" class="form-control w-full">
+
+                                        <option value="" selected disabled>
+                                            Seleccione una opción
+                                        </option>
+
+                                        <option v-for="organization in organizations" :value="organization.id" :key="'organization-' + organization.id">
+                                            {{ organization.name }}
+                                        </option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Email
+                                    <Input v-model="contact.email" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Phone
+                                    <Input v-model="contact.phone" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Address
+                                    <Input v-model="contact.address" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    City
+                                    <Input v-model="contact.city" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    State
+                                    <Input v-model="contact.state" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Country
+                                    <select v-model="contact.country_id" class="form-control w-full">
+                                        <option value="" selected disabled>
+                                            Seleccione una opción
+                                        </option>
+                                        <option v-for="country in countries" :value="country.id" :key="'country-' + country.id">
+                                            {{ country.name }}
+                                        </option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Postal Code
+                                    <Input v-model="contact.postal_code" type="text" class="w-full" />
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-3">
+                            <button class="btn btn-indigo" @click="store">
+                                Crear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import Input from '@/Jetstream/Input.vue'
+    import JetValidationErrors from '@/Jetstream/ValidationErrors.vue'
+
+    export default {
+        components: {
+            AppLayout,
+            Input,
+            JetValidationErrors
+        },
+        data() {
+            return {
+                contact: {
+                    first_name: '',
+                    last_name: '',
+                    organization_id: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    city: '',
+                    state: '',
+                    country_id: '',
+                    postal_code: ''
+                }
+            }
+        },
+        props: {
+            organizations: Array,
+            countries: Array
+        },
+        methods: {
+            store() {
+                this.$inertia.post(this.route('contacts.store'), this.contact)
+            }
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+7. Modificar el controlador **app\Http\Controllers\ContactController.php**:
+    ```php
+    ≡
+    public function index(Request $request)
+    {
+        $filters = $request->all('search');
+        $contacts = Contact::with('organization')
+            ->filter($filters)
+            ->latest('id')
+            ->paginate();
+        return Inertia::render('Contacts/Index', compact('contacts', 'filters'));
+    }
+    ≡
+    public function create()
+    {
+        $organizations = \App\Models\Organization::all();
+        $countries = \App\Models\Country::all();
+        return Inertia::render('Contacts/Create', compact('organizations', 'countries'));
+    }
+    ≡
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'organization_id' => 'required',
+            'email' => 'required',
+            'phone' => 'required',
+            'address' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'country_id' => 'required',
+            'postal_code' => 'required'
+        ]);
+        $contact = Contact::create($data);
+        return redirect()->route('contacts.edit', $contact);
+    }
+    ≡
+    ```
+
+### Editar registros
+1. Modificar la vista **resources\js\Pages\Contacts\Index.vue**:
+    ```vue
+    ≡
+    <tbody class="bg-white divide-y divide-gray-200">
+        <tr v-for="contact in contacts.data" :key="contact.id">
+            ≡
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <Link :href="route('contacts.edit', contact)" class="text-indigo-600 hover:text-indigo-900">
+                    <!-- <i class="fas fa-chevron-right"></i> --> >
+                </Link>
+            </td>
+        </tr>
+    </tbody>
+    ≡
+    ```
+2. Modificar el controlador **app\Http\Controllers\ContactController.php**:
+    ```php
+    ≡
+    public function edit(Contact $contact)
+    {
+        $organizations = \App\Models\Organization::all();
+        $countries = \App\Models\Country::all();
+        return Inertia::render('Contacts/Edit', compact('contact', 'organizations', 'countries'));
+    }
+    ≡
+    public function update(Request $request, Contact $contact)
+    {
+        $data = $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'organization_id' => 'required',
+            'email' => 'required',
+            'phone' => 'required',
+            'address' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'country_id' => 'required',
+            'postal_code' => 'required'
+        ]);
+        $contact->update($data);
+        return redirect()->route('contacts.edit', $contact);
+    }
+    ≡
+    ```
+3. Modificar la vista **resources\js\Pages\Contacts\Edit.vue**:
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Editar contacto">
+                <template #header>
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        Contactos
+                    </h2>
+                </template>
+                <div class="container py-12">
+                    <h1 class="text-3xl font-semibold text-gray-700 mb-3">
+                        <span class="text-indigo-500">Contacts /</span> Edit
+                    </h1>
+
+                    <div class="bg-white px-6 py-8 rounded-lg shadow">
+                        <!-- {{ this.$page.props.errors }} -->
+                        <jet-validation-errors />
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label>
+                                    First Name
+                                    <Input v-model="form.first_name" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Last Name
+                                    <Input v-model="form.last_name" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Organization
+                                    <select v-model="form.organization_id" class="form-control w-full">
+
+                                        <option value="" selected disabled>
+                                            Seleccione una opción
+                                        </option>
+
+                                        <option v-for="organization in organizations" :value="organization.id" :key="'organization-' + organization.id">
+                                            {{ organization.name }}
+                                        </option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Email
+                                    <Input v-model="form.email" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Phone
+                                    <Input v-model="form.phone" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Address
+                                    <Input v-model="form.address" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    City
+                                    <Input v-model="form.city" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    State
+                                    <Input v-model="form.state" type="text" class="w-full" />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Country
+                                    <select v-model="form.country_id" class="form-control w-full">
+                                        <option value="" selected disabled>
+                                            Seleccione una opción
+                                        </option>
+                                        <option v-for="country in countries" :value="country.id" :key="'country-' + country.id">
+                                            {{ country.name }}
+                                        </option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Postal Code
+                                    <Input v-model="form.postal_code" type="text" class="w-full" />
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-3">
+                            <button class="btn btn-indigo" @click="update">
+                                Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import Input from '@/Jetstream/Input.vue'
+    import JetValidationErrors from '@/Jetstream/ValidationErrors.vue'
+
+    export default {
+        components: {
+            AppLayout,
+            Input,
+            JetValidationErrors
+        },
+        data() {
+            return {
+                form: this.contact
+            }
+        },
+        props: {
+            contact: Object,
+            organizations: Array,
+            countries: Array
+        },
+        methods: {
+            update () {
+                this.$inertia.put(this.route('contacts.update', this.contact), this.form)
+                // Otra forma de enviar:
+                /* this.$inertia.form(this.form).put(this.route('contacts.update', this.contact)) */
+            }
+        }
+    }
+    </script>
+
+    <style>
+
+    </style>
+    ```
+
+### Eliminar registro
+1. Modificar archivo de estilos **resources\css\buttons.css**:
+    ```css
+    ≡
+    .btn-red {
+        @apply bg-red-500 text-white hover:bg-red-700;
+    }
+    ```
+2. Modificar la vista **resources\js\Pages\Contacts\Edit.vue**:
+    ```vue
+    <template>
+        <div>
+            <app-layout title="Editar contacto">
+                ≡
+                <div class="container py-12">
+                    ≡
+                    <div class="bg-white px-6 py-8 rounded-lg shadow">
+                        ≡
+                        <div class="grid grid-cols-2 gap-6">
+                            ≡
+                        </div>
+                        <div class="flex justify-end mt-3">
+                            <button class="btn btn-red mr-3" @click="destroy">
+                                Eliminar
+                            </button>
+                            <button class="btn btn-indigo" @click="update">
+                                Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </app-layout>
+        </div>
+    </template>
+
+    <script>
+    ≡
+    export default {
+        ≡
+        methods: {
+            update () {
+                ≡
+            },
+            destroy () {
+                this.$inertia.delete(this.route('contacts.update', this.contact))
+            }
+        }
+    }
+    </script>
+    ≡
+    ```
+3. Modificar el controlador **app\Http\Controllers\ContactController.php**:
+    ```php
+    ≡
+    public function destroy(Contact $contact)
+    {
+        $contact->delete();
+        return redirect()->route('contacts.index');
+    }
+    ≡
+    ```
+
+## Subir repositorio
+1. En la ubicación raíz del proyecto en la terminal de la máquina local:
+    + $ git add .
+    + $ git commit -m "Proyecto culminado (Versión 0)"
+    + $ git push -u origin main
+
+## Limpiar cache
++ $ php artisan cache:clear
++ $ php artisan config:clear
++ $ php artisan config:cache
